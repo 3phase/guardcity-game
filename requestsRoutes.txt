@@ -1,0 +1,59 @@
+After login:
+
+GET: /get-user/
+Response: 
+User + progress
+{
+    "id": id,
+    "user": userName
+}
+
+GET: /get-progress/{user_id}
+Response:
+Progress
+{
+    "alien": 3,
+    "planet": 6,
+    gains
+}
+
+Menu
+
+GET: /planets
+Response:
+[
+    {name: '' },
+    {name: '' },
+    {name: '' }
+]
+
+Load level:
+
+GET: /aliens/{id}
+Response:
+{
+    "name" : "alien1"
+}
+
+GET: /planet/6
+Response:
+{
+    "name" : "planet6"
+}
+
+GET: /planet/{id}/alien/{id}/missions/init
+Response: 
+RequestedNode
+{
+	id: Integer,
+    conversation: String,
+	choices: Array<Node>
+}
+
+Complete misssion/planet or  exit
+POST: /save-progress/?name={name}
+Body:
+{
+    "planet"  : 6,
+    "alien"   : 4,
+}
