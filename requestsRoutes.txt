@@ -6,12 +6,6 @@ User + progress
 {
     "id": id,
     "user": userName
-}
-
-GET: /get-progress/{user_id}
-Response:
-Progress
-{
     "alien": 3,
     "planet": 6,
     gains
