@@ -8,6 +8,9 @@ User + progress
     "user": userName
     "alien": 3,
     "planet": 6,
+    "mission" : {
+        
+    }
     gains
 }
 
@@ -35,7 +38,7 @@ Response:
     "name" : "planet6"
 }
 
-GET: /planet/{id}/alien/{id}/missions/init
+GET: /planet/{id}/alien/{id}/missions/{mission_id}
 Response: 
 RequestedNode
 {

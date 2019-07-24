@@ -6,5 +6,5 @@ using UnityEngine;
 public class Node
 {
     public string problem;
-    public string [] options;
+    public List<Node> options;
 }
