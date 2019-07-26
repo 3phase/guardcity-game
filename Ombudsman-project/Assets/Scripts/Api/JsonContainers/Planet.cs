@@ -8,6 +8,4 @@ public class Planet
     public string name;
     public string level;
     public int reachable_population;
-    public string created_at;
-    public string updated_at;
 }

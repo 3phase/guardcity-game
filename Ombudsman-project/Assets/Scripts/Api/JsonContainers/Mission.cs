@@ -4,5 +4,7 @@ using UnityEngine;
 
 public class Mission
 {
-    public List<Node> nodes;
+    public Planet planet;
+    public Alien alien;
+    public int current_node_id;
 }

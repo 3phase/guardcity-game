@@ -5,6 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class Node
 {
-    public string problem;
+    public int id;
+    public string dialog_file_path;
     public List<Node> options;
 }
