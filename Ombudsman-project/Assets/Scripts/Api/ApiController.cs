@@ -44,9 +44,8 @@ public static class ApiController {
         return planet;
     }
 
-    public static Planet[] GetPlanets() {
-        string jsonResponse = MakeRequest("http://testhost-laravel.herokuapp.com/planets/");
-        return DeserializeJson<Planet[]>(jsonResponse);
+    public static List<Planet> GetPlanets() {
+        return getDeserializedJson<dynamic>("planets").planets.ToObject<IList<Planet>>();
     }
 
     private static T DeserializeJson<T>(string jsonResponse) {
