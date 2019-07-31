@@ -10,15 +10,22 @@ public class MissionController : MonoBehaviour
     public GameObject optionPrefab;
     private Text missionProblem;
     private List<GameObject> options;
-    
+
     void Awake()
     {
         Planet planet = ApiController.GetPlanet(1);
+
+        Debug.Log(planet.name);
 
         Node node = ApiController.GetNode(61);
 
         missionProblem = GameObject.Find("Problem").GetComponent<Text>();
         missionProblem.text = node.dialog_file_path;
+
+        Mission sampleMission = ApiController.GetMission(11, 1);
+
+        Debug.Log(sampleMission.current_node_id);
+        Debug.Log(sampleMission.alien);
 
         for (int i = 0; i < node.options.Count; i++)
         {
@@ -38,12 +45,14 @@ public class MissionController : MonoBehaviour
         }*/
     }
 
-    public void AddNewNode() {
+    public void AddNewNode()
+    {
         // Node node = ApiController.GetNode(0, 0);
         // mission.nodes.Add(node);
     }
 
-    public void CompleteNode() {
+    public void CompleteNode()
+    {
         //change gains
         AddNewNode();
     }
