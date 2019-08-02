@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class MissionController : MonoBehaviour
 {
     Mission mission;
-    Node currentNode;
     public GameObject optionPrefab;
     private Text missionProblem;
     private List<GameObject> options;
@@ -16,30 +15,47 @@ public class MissionController : MonoBehaviour
     {
         Planet planet = ApiController.GetPlanet(1);
         options = new List<GameObject>();
-        Debug.Log(planet.name);
 
         Node node = ApiController.GetNode(61);
 
+        LoadMission(node);
+    }
+
+    public void ClearOptions() {
+        foreach(var option in options) {
+            Destroy(option);
+        }
+        options.Clear();
+    }
+
+    public void EndMission() {
+        var canvas = GameObject.Find("MissionPanel").GetComponent<CanvasGroup>();
+        canvas.alpha = 0;
+        canvas.interactable = false;
+        canvas.blocksRaycasts = false;
+    }
+
+    public void LoadMission(Node node) {
+        
         missionProblem = GameObject.Find("Problem").GetComponent<Text>();
         missionProblem.text = node.dialog_file_path;
 
-        Mission sampleMission = ApiController.GetMission(11, 1);
 
-        Debug.Log(sampleMission.current_node_id);
-        Debug.Log(sampleMission.alien);
 
-        for (int i = 0; i < node.options.Count; i++)
-        {
-            Debug.Log(node.options[i].dialog_file_path);
-            var option = Instantiate(optionPrefab, missionProblem.transform);
-            option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (i + 1)*75, missionProblem.transform.position.z);
-            option.GetComponentInChildren<Text>().text = node.options[i].dialog_file_path;
-            options.Add(option);
-        }
-    }
-
-    void Update()
-    {
+        ClearOptions();
         
+        if(node.options.Count == 0) {
+            EndMission();
+        } else {
+            for (int i = 0; i < node.options.Count; i++)
+            {
+                var option = Instantiate(optionPrefab, missionProblem.transform);
+                option.name = "Option" + i;
+                option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (i + 1)*75, missionProblem.transform.position.z);
+                option.GetComponentInChildren<Text>().text = node.options[i].dialog_file_path;
+                option.GetComponent<Info>().node = ApiController.GetNode(node.options[i].pivot.next_id);
+                options.Add(option);
+            }
+        }
     }
 }

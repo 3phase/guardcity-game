@@ -7,5 +7,6 @@ public class Node
 {
     public int id;
     public string dialog_file_path;
+    public Pivot pivot;
     public List<Node> options;
 }
