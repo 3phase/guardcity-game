@@ -8,11 +8,13 @@ public static class Profile
     public static string name;
     public static string alienImagePath;
     public static string currentPlanet;
+    public static Gains gains;
 
     public static void SetProfile(User user) {
         Profile.id = user.id;
         Profile.name = user.name;
         Profile.alienImagePath = user.alienImagePath;
         Profile.currentPlanet = user.currentPlanet;
+        Profile.gains = user.gains;
     }
 }

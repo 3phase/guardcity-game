@@ -2,38 +2,85 @@
 using System.Net;
 using System;
 using System.IO;
-public static class ApiController {
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
-    public static User GetUser() {
-        string jsonResponse = MakeRequest("http://testhost-laravel.herokuapp.com/getUser");
-        return DeserializeJson<User>(jsonResponse);
-    }
-    
-    public static Node GetNode(int nodeId) {
-        string jsonResponse = MakeRequest("http://testhost-laravel.herokuapp.com/mission_node/" + nodeId);
-        return DeserializeJson<Node>(jsonResponse);
-    }
+public static class ApiController
+{
 
-    public static Planet GetPlanet(int planetId) {
-        string jsonResponse = MakeRequest("http://testhost-laravel.herokuapp.com/planet/" + planetId);
-        return DeserializeJson<Planet>(jsonResponse);
+    private static dynamic getDeserializedJson(string value)
+    {
+        string url = "http://testhost-laravel.herokuapp.com/api/" + value;
+        var jsonResponse = MakeRequest(url);
+        var deserializedObj = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+        return deserializedObj;
     }
 
-    public static Planet[] GetPlanets() {
-        string jsonResponse = MakeRequest("http://testhost-laravel.herokuapp.com/planets/");
-        return DeserializeJson<Planet[]>(jsonResponse);
+    public static User GetUser()
+    {
+        string jsonResponse = MakeRequest("getUser");
+        dynamic deserializedObj = getDeserializedJson(jsonResponse);
+
+        var user = new User();
+
+        user.name = deserializedObj.name;
+
+        return user;
     }
 
-    private static T DeserializeJson<T>(string jsonResponse) {
-        T obj = JsonUtility.FromJson<T>(jsonResponse);
-        return obj;
+    public static Node GetNode(int nodeId)
+    {
+        dynamic deserializedObj = getDeserializedJson("mission_node/" + nodeId);
+
+        Node node = new Node();
+        node.id = deserializedObj["0"].id;
+        node.dialog_file_path = deserializedObj["0"].dialog_file_path;
+
+        node.options = deserializedObj.options.ToObject<IList<Node>>();
+
+        return node;
     }
 
-    private static string MakeRequest(string url) {
-        
+    public static Mission GetMission(int alien_id, int mission_id)
+    {
+        dynamic deserializedObj = getDeserializedJson(string.Format("alien/{0}/mission/{1}", alien_id, mission_id));
+
+        var mission = new Mission();
+        mission.alien = deserializedObj.alien;
+        mission.current_node_id = deserializedObj.starting_node_id;
+
+        return mission;
+    }
+
+    public static Planet GetPlanet(int planetId)
+    {
+        Planet planet = new Planet();
+        dynamic deserializedObj = getDeserializedJson("planet/" + planetId.ToString());
+
+        planet.name = deserializedObj.name;
+        planet.level = deserializedObj.level;
+        planet.reachable_population = deserializedObj.reachable_population;
+
+        return planet;
+    }
+
+    public static List<Planet> getPlanets()
+    {
+        return getDeserializedJson("planets").planets.ToObject<IList<Planet>>();
+    }
+
+    public static List<Planet> getAliens()
+    {
+        return getDeserializedJson("aliens").aliens.ToObject<IList<Alien>>();
+    }
+
+    private static string MakeRequest(string url)
+    {
+
         HttpWebRequest request = (HttpWebRequest)WebRequest.Create(String.Format(url));
         request.Method = "GET";
-        request.Headers.Add("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjFiZDMxMWQwZTljY2EyNjA1ZjVmMjg4ODI1YmQyMjlkMzBjYzQ3OGFmMjRmZjEwYzYyZWJiZGM4YTdhNDYyNzI1MWE4YWEwMzcwZWQ3NzQwIn0.eyJhdWQiOiIyMSIsImp0aSI6IjFiZDMxMWQwZTljY2EyNjA1ZjVmMjg4ODI1YmQyMjlkMzBjYzQ3OGFmMjRmZjEwYzYyZWJiZGM4YTdhNDYyNzI1MWE4YWEwMzcwZWQ3NzQwIiwiaWF0IjoxNTYzOTc1NDI5LCJuYmYiOjE1NjM5NzU0MjksImV4cCI6MTU5NTU5NzgyOSwic3ViIjoiMSIsInNjb3BlcyI6W119.hEUrCA_4sIGVRisWtDhvFdGiG5-hdZM6eLq3z2UF_ywwhwwuFfHU-P08k_MJk9l7bPpguLHPdc3S3m-u1IMQQFb83zMwgeA7XB2voXzcr8cNCjVAg4XsBDt2JKcL5xVfYTVwPJJtRIkD8_OT_oeSURWxlpGg_4MXaA8amzE2MGCMPM2h6-JAjegjeVkRYN8Adh7-WNARyWu1aw304YpW1cTy3Z4WPDNdN99YVH1pcP3ZGk8vgM7pUVyxL3BHeN2xBmFq16PaR8gpuCffiKjkEMiXCEXyt4KBfQf3Y28-5cZjtW5KDM4m8Xc33lkqxgUrbzbRlJUMK6-VV7CBJjg9Y590ATLYkqf9Q51a9ljt0YCFN1HItPm47RwAVKv1px-pagvA0i3GCu6XVdyQPV20YUQLHjQGWOBENocWTU9Uo6Pl16GeiA1pXr3lTQj-BEXqmzxXP6ucrCAJc7evcG7IO7DXaRZ8_iH86BFY0gSjFFegM0I-LsHBhnqewU_yyAd8ynrJQ93qYCculpzlEObfDQUXtkzT5w_pYyw9zpaNke3i8R5t_uUg1AaANpxE9yT0toeF1AyYjV6GZs2Dgd4mEKSX1Y79--7WYfLSEQWcke_BlrQ9GkxEcM9z_QwdnkfGq9cDb4y2Ds9l7vVCp-fKSNwZ-BfCmWJTU5vEcGG6DDM");
+        request.Headers.Add("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjM2M2EzZjMzMTNjODBjZjUxZjBkOTcwNDFiMWRkMDNjOGYzNjZiZWFiZjg4NDMzN2EzMTAxNTNlOGJhMmEyZTZiZmI1YmM5MmZjNzY3NjBhIn0.eyJhdWQiOiIxIiwianRpIjoiMzYzYTNmMzMxM2M4MGNmNTFmMGQ5NzA0MWIxZGQwM2M4ZjM2NmJlYWJmODg0MzM3YTMxMDE1M2U4YmEyYTJlNmJmYjViYzkyZmM3Njc2MGEiLCJpYXQiOjE1NjQ0OTUwOTQsIm5iZiI6MTU2NDQ5NTA5NCwiZXhwIjoxNTk2MTE3NDk0LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.lEY_vqSYG4QM72xDnuUcHC2lUuK-QWLpqo-eaOHljP_WJyYFSjAM5tgGFGw1oyXwUdPtPXNdC7svZE2v765RPMuyGBWGjY0iaNpVMACRhSW6J1evOgA0WruzolDYj5mrseb-pjeTH0ZL54AqG22t7dCR0W5UQoCQxFjZgKLw_H3PrnmZ31iRAmbP0_fXKlv5orJnwtNUBSrlm0COZGQ1zC7uyeggt2s_AutHiW7o_YJw4X0C0NYb-IZLR1gC1ns8B7oP2XQezldQFMU3WndEQKWg4rssR0FdDTEapfgJBZ-S5d0P6B2buoMGvgk2fPJwmPH3gjDopy77p0rIn727dyKE9QFpDDWpyX351OtcK5J9byjjV23D30SDsdbuBAJDkocbJmMSOaFFMAdYdjxpvJXg06LmaZLzkaoNrPLdUqGmahp843KrgPzIbTxW9-Ly_53PvLbi97KWCnKeR856wKwi5kM-daY21LdRez83agtF90Cv_FQsY4Cegdn6DlDonLLvqIS7tBQeWzf6-AHgf-SEBjqnR18cOT7Kr902FH3HrQnW2SgLHdEbuQZuBDlYEzGqmya0dlmAigbmtc4-ZCFZW572N-TdG-6O-w23q3ClF1Rwk270ODA8a_TtLlVCQqqNGX2ZJPkoHraHmTMaBbhV6w0XI5vdhlK7XFE0wFw");
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
         StreamReader reader = new StreamReader(response.GetResponseStream());
         string jsonResponse = reader.ReadToEnd();

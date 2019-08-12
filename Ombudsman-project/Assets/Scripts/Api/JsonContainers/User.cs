@@ -9,5 +9,5 @@ public class User
     public string name;
     public string alienImagePath;
     public string currentPlanet;
-    //to do: gains
+    public Gains gains;
 }
