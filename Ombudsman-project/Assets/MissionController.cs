@@ -41,6 +41,11 @@ public class MissionController : MonoBehaviour
         missionProblem.text = node.dialog_file_path;
 
 
+        Profile.gains.popularity += node.gains.popularity;
+        Profile.gains.trust += node.gains.trust;
+        Profile.gains.energy += node.gains.energy;
+        Profile.gains.days += node.gains.days;
+        Profile.gains.unlocking_trust += node.gains.unlocking_trust;
 
         ClearOptions();
         

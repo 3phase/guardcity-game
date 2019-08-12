@@ -1,0 +1,23 @@
+{
+    "0": {
+        "id": 1,
+        "dialog_file_path": "Баща ми ме бие с колана си. Трябва ми помощ!",
+    },
+    "gains": {
+        "popularity": 0,
+        "trust": 0,
+        "energy": 0,
+        "days": 0,
+        "unlocking_trust": 0
+    },
+    "options": [{
+        "option": {
+            "id": 11,
+            "dialog_file_path": "Мислех, че сънувам, очите се въртят към звездите",
+            "pivot": {
+                "start_id": 1,
+                "next_id": 11
+            }
+        }
+    }]
+}

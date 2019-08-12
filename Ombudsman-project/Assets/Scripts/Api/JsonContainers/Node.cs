@@ -9,4 +9,6 @@ public class Node
     public string dialog_file_path;
     public Pivot pivot;
     public List<Node> options;
+    public Gains gains;
+
 }
