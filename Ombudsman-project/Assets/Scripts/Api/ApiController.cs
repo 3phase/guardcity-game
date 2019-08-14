@@ -18,11 +18,11 @@ public static class ApiController
         string url = "http://testhost-laravel.herokuapp.com/api/" + value;
         var jsonResponse = await makeRequest(url);
         var deserializedObj = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
-        Debug.Log(deserializedObj);
         return deserializedObj;
     }
 
     private static HttpClient client;
+    private static string token;
 
     private static async Task<string> getToken(string username, string passoword)
     {
@@ -41,28 +41,17 @@ public static class ApiController
         requestUrl = "https://testhost-laravel.herokuapp.com/api/login";
         response = await client.PostAsync(requestUrl, content);
         responseString = await response.Content.ReadAsStringAsync();
-        var token = JsonConvert.DeserializeObject<dynamic>(responseString).token.Value;
+        token = JsonConvert.DeserializeObject<dynamic>(responseString).token.Value;
 
         return token;
     }
 
     private static async Task<string> makeRequest(string url)
     {
-        /*string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
-        client.DefaultRequestHeaders.Accept.Clear();
-        HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, url);
-        msg.Content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
-        msg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        msg.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        var response = await client.SendAsync(msg);
-        
-        var responseString = await response.Content.ReadAsStringAsync();
-
-        return responseString;
-        */
-
-        string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
+        if (token == null)
+        {
+            string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
+        }
 
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -91,12 +80,25 @@ public static class ApiController
         dynamic deserializedObj = await getDeserializedJson("mission_node/" + nodeId);
 
         Node node = new Node();
-        node.id = deserializedObj["current_node"].id;
-        node.dialog = deserializedObj["current_node"].dialog;
+        node.id = deserializedObj.current_node.id;
+        node.dialog = deserializedObj.current_node.dialog;
+        node.options = new List<Node>();
+        foreach (var obj in deserializedObj.options) {
+            Node newOption = new Node();
 
-        Debug.Log(node.dialog);
+            newOption.id = obj.node.id;
+            newOption.speaker = obj.node.speaker;
+            newOption.dialog = obj.node.dialog;
 
-        node.options = deserializedObj.options.ToObject<IList<Node>>();
+            newOption.gains = new Gains();
+            newOption.gains.popularity = obj.gains.popularity;
+            newOption.gains.trust = obj.gains.trust;
+            newOption.gains.energy = obj.gains.energy;
+            newOption.gains.days = obj.gains.days;
+            newOption.gains.unlocking_trust = obj.gains.unlocking_trust;
+
+            node.options.Add(newOption);
+        }
 
         return node;
     }

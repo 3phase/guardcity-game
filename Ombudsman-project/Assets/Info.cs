@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Info : MonoBehaviour
 {
-    public Node node;
+    public Node node { get; set; }
 
     public void NextNode() {
-        GameObject.Find("MissionPanel").GetComponent<MissionController>().LoadMission(node); 
+        GameObject.Find("MissionPanel").GetComponent<MissionController>().loadNode(node); 
     }
 }
