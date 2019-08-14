@@ -5,10 +5,10 @@ using UnityEngine;
 [System.Serializable]
 public class Node
 {
-    public int id;
-    public string dialog_file_path;
-    public Pivot pivot;
-    public List<Node> options;
-    public Gains gains;
-
+    public int id { get; set; }
+    public string dialog { get; set; }
+    public string speaker { get; set; }
+    public Pivot pivot { get; set; }
+    public List<Node> options { get; set; }
+    public Gains gains { get; set; }
 }

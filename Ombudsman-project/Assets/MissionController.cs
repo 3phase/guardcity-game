@@ -11,12 +11,13 @@ public class MissionController : MonoBehaviour
     private Text missionProblem;
     private List<GameObject> options;
 
-    void Awake()
+    public async void StartMission()
     {
-        Planet planet = ApiController.GetPlanet(1);
+        Planet planet = await ApiController.GetPlanet(1);
+
         options = new List<GameObject>();
 
-        Node node = ApiController.GetNode(61);
+        Node node = await ApiController.GetNode(41);
 
         LoadMission(node);
     }
@@ -35,17 +36,18 @@ public class MissionController : MonoBehaviour
         canvas.blocksRaycasts = false;
     }
 
-    public void LoadMission(Node node) {
+    public async void LoadMission(Node node) {
         
         missionProblem = GameObject.Find("Problem").GetComponent<Text>();
-        missionProblem.text = node.dialog_file_path;
+        missionProblem.text = node.dialog;
 
+        //Profile.gains.popularity += node.gains.popularity;
+       // Profile.gains.trust += node.gains.trust;
+        //Profile.gains.energy += node.gains.energy;
+        //Profile.gains.days += node.gains.days;
+       // Profile.gains.unlocking_trust += node.gains.unlocking_trust;
 
-        Profile.gains.popularity += node.gains.popularity;
-        Profile.gains.trust += node.gains.trust;
-        Profile.gains.energy += node.gains.energy;
-        Profile.gains.days += node.gains.days;
-        Profile.gains.unlocking_trust += node.gains.unlocking_trust;
+        Debug.Log("HERE");
 
         ClearOptions();
         
@@ -57,8 +59,8 @@ public class MissionController : MonoBehaviour
                 var option = Instantiate(optionPrefab, missionProblem.transform);
                 option.name = "Option" + i;
                 option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (i + 1)*75, missionProblem.transform.position.z);
-                option.GetComponentInChildren<Text>().text = node.options[i].dialog_file_path;
-                option.GetComponent<Info>().node = ApiController.GetNode(node.options[i].pivot.next_id);
+                option.GetComponentInChildren<Text>().text = node.options[i].dialog;
+                option.GetComponent<Info>().node = await ApiController.GetNode(node.options[i].pivot.next_id);
                 options.Add(option);
             }
         }

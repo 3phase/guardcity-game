@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Planet
 {
-    public int id;
-    public string name;
-    public string level;
-    public int reachable_population;
+    public int id { get; set; }
+    public string name { get; set; }
+    public string level { get; set; }
+    public int unlockingPopularity { get; set; }
 }

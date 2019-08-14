@@ -5,46 +5,105 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Text;
 
 public static class ApiController
 {
 
-    private static dynamic getDeserializedJson(string value)
+    private static async Task<dynamic> getDeserializedJson(string value)
     {
         string url = "http://testhost-laravel.herokuapp.com/api/" + value;
-        var jsonResponse = MakeRequest(url);
+        var jsonResponse = await makeRequest(url);
         var deserializedObj = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+        Debug.Log(deserializedObj);
         return deserializedObj;
     }
 
-    public static User GetUser()
+    private static HttpClient client;
+
+    private static async Task<string> getToken(string username, string passoword)
     {
-        string jsonResponse = MakeRequest("getUser");
+        string requestUrl = "http://testhost-laravel.herokuapp.com/login";
+
+        client = new HttpClient();
+
+        var values = new Dictionary<string, string> {
+                { "email", username },
+                { "password", passoword }
+            };
+
+        var content = new FormUrlEncodedContent(values);
+        var response = await client.PostAsync(requestUrl, content);
+        var responseString = await response.Content.ReadAsStringAsync();
+        requestUrl = "https://testhost-laravel.herokuapp.com/api/login";
+        response = await client.PostAsync(requestUrl, content);
+        responseString = await response.Content.ReadAsStringAsync();
+        var token = JsonConvert.DeserializeObject<dynamic>(responseString).token.Value;
+
+        return token;
+    }
+
+    private static async Task<string> makeRequest(string url)
+    {
+        /*string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
+        client.DefaultRequestHeaders.Accept.Clear();
+        HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, url);
+        msg.Content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
+        msg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        msg.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        var response = await client.SendAsync(msg);
+        
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        return responseString;
+        */
+
+        string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
+
+        client.DefaultRequestHeaders.Clear();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync(url);
+
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        return responseString;
+    }
+
+    public static async Task<User> GetUser()
+    {
+        string jsonResponse = await makeRequest("user");
         dynamic deserializedObj = getDeserializedJson(jsonResponse);
 
         var user = new User();
 
         user.name = deserializedObj.name;
-
         return user;
     }
 
-    public static Node GetNode(int nodeId)
+    public static async Task<Node> GetNode(int nodeId)
     {
-        dynamic deserializedObj = getDeserializedJson("mission_node/" + nodeId);
+        dynamic deserializedObj = await getDeserializedJson("mission_node/" + nodeId);
 
         Node node = new Node();
-        node.id = deserializedObj["0"].id;
-        node.dialog_file_path = deserializedObj["0"].dialog_file_path;
+        node.id = deserializedObj["current_node"].id;
+        node.dialog = deserializedObj["current_node"].dialog;
+
+        Debug.Log(node.dialog);
 
         node.options = deserializedObj.options.ToObject<IList<Node>>();
 
         return node;
     }
 
-    public static Mission GetMission(int alien_id, int mission_id)
+    public static async Task<Mission> GetMission(int alien_id, int mission_id)
     {
-        dynamic deserializedObj = getDeserializedJson(string.Format("alien/{0}/mission/{1}", alien_id, mission_id));
+        dynamic deserializedObj = await getDeserializedJson(string.Format("alien/{0}/mission/{1}", alien_id, mission_id));
 
         var mission = new Mission();
         mission.alien = deserializedObj.alien;
@@ -53,37 +112,15 @@ public static class ApiController
         return mission;
     }
 
-    public static Planet GetPlanet(int planetId)
+    public static async Task<Planet> GetPlanet(int planetId)
     {
         Planet planet = new Planet();
-        dynamic deserializedObj = getDeserializedJson("planet/" + planetId.ToString());
+        dynamic deserializedObj =  await getDeserializedJson("planet/" + planetId.ToString());
 
         planet.name = deserializedObj.name;
         planet.level = deserializedObj.level;
-        planet.reachable_population = deserializedObj.reachable_population;
+        planet.unlockingPopularity = deserializedObj.unlocking_popularity;
 
         return planet;
-    }
-
-    public static List<Planet> getPlanets()
-    {
-        return getDeserializedJson("planets").planets.ToObject<IList<Planet>>();
-    }
-
-    public static List<Planet> getAliens()
-    {
-        return getDeserializedJson("aliens").aliens.ToObject<IList<Alien>>();
-    }
-
-    private static string MakeRequest(string url)
-    {
-
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(String.Format(url));
-        request.Method = "GET";
-        request.Headers.Add("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjM2M2EzZjMzMTNjODBjZjUxZjBkOTcwNDFiMWRkMDNjOGYzNjZiZWFiZjg4NDMzN2EzMTAxNTNlOGJhMmEyZTZiZmI1YmM5MmZjNzY3NjBhIn0.eyJhdWQiOiIxIiwianRpIjoiMzYzYTNmMzMxM2M4MGNmNTFmMGQ5NzA0MWIxZGQwM2M4ZjM2NmJlYWJmODg0MzM3YTMxMDE1M2U4YmEyYTJlNmJmYjViYzkyZmM3Njc2MGEiLCJpYXQiOjE1NjQ0OTUwOTQsIm5iZiI6MTU2NDQ5NTA5NCwiZXhwIjoxNTk2MTE3NDk0LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.lEY_vqSYG4QM72xDnuUcHC2lUuK-QWLpqo-eaOHljP_WJyYFSjAM5tgGFGw1oyXwUdPtPXNdC7svZE2v765RPMuyGBWGjY0iaNpVMACRhSW6J1evOgA0WruzolDYj5mrseb-pjeTH0ZL54AqG22t7dCR0W5UQoCQxFjZgKLw_H3PrnmZ31iRAmbP0_fXKlv5orJnwtNUBSrlm0COZGQ1zC7uyeggt2s_AutHiW7o_YJw4X0C0NYb-IZLR1gC1ns8B7oP2XQezldQFMU3WndEQKWg4rssR0FdDTEapfgJBZ-S5d0P6B2buoMGvgk2fPJwmPH3gjDopy77p0rIn727dyKE9QFpDDWpyX351OtcK5J9byjjV23D30SDsdbuBAJDkocbJmMSOaFFMAdYdjxpvJXg06LmaZLzkaoNrPLdUqGmahp843KrgPzIbTxW9-Ly_53PvLbi97KWCnKeR856wKwi5kM-daY21LdRez83agtF90Cv_FQsY4Cegdn6DlDonLLvqIS7tBQeWzf6-AHgf-SEBjqnR18cOT7Kr902FH3HrQnW2SgLHdEbuQZuBDlYEzGqmya0dlmAigbmtc4-ZCFZW572N-TdG-6O-w23q3ClF1Rwk270ODA8a_TtLlVCQqqNGX2ZJPkoHraHmTMaBbhV6w0XI5vdhlK7XFE0wFw");
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        StreamReader reader = new StreamReader(response.GetResponseStream());
-        string jsonResponse = reader.ReadToEnd();
-        return jsonResponse;
     }
 }
