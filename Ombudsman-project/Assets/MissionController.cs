@@ -74,6 +74,14 @@ public class MissionController : MonoBehaviour
         if (node.options.Count == 0) {
             EndMission(node);
         } else {
+
+            Task<Node>[] tasks = new Task<Node>[node.options.Count];
+            for(int i = 0; i < node.options.Count; i++)
+            {
+                tasks[i] = ApiController.GetNode(node.options[i].id);
+            }
+            await Task.WhenAll(tasks);
+
             for (int i = 0; i < node.options.Count; i++)
             {
                 var option = Instantiate(optionPrefab, missionProblem.transform);
@@ -88,7 +96,7 @@ public class MissionController : MonoBehaviour
                     option.GetComponentInChildren<Text>().text = node.options[i].dialog;
                 }
 
-                option.GetComponent<Info>().node = await ApiController.GetNode(node.options[i].id);
+                option.GetComponent<Info>().node = tasks[i].Result;
                 options.Add(option);
             }
         }
