@@ -9,9 +9,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Text;
+using UnityEngine.Networking;
 
 public static class ApiController
 {
+
+    private static readonly string LOGIN_URL = "http://testhost-laravel.herokuapp.com/login";
+    private static readonly string API_LOGIN_URL = "https://testhost-laravel.herokuapp.com/api/login";
+    private static int FRAME_DELAY_MS
+    {
+        // If targetFrameRate is -1 it is not set pick reasonable value.
+        get { return Application.targetFrameRate == -1 ? 33 : (1 / Application.targetFrameRate * 1000); } 
+    }
 
     private static async Task<dynamic> getDeserializedJson(string value)
     {
@@ -24,24 +33,20 @@ public static class ApiController
     private static HttpClient client;
     private static string token;
 
-    private static async Task<string> getToken(string username, string passoword)
+    private static async Task<string> getToken(string username, string password)
     {
-        string requestUrl = "http://testhost-laravel.herokuapp.com/login";
+        List<IMultipartFormSection> authenticationFormData = new List<IMultipartFormSection>();
+        authenticationFormData.Add(new MultipartFormDataSection("email", username));
+        authenticationFormData.Add(new MultipartFormDataSection("password", password));
 
-        client = new HttpClient();
+        // @Nikola - zashto se pravi tova??? - Krasi
+        UnityWebRequest loginRequest = UnityWebRequest.Post(LOGIN_URL, authenticationFormData);
+        await WaitForRequest(loginRequest.SendWebRequest());
 
-        var values = new Dictionary<string, string> {
-                { "email", username },
-                { "password", passoword }
-            };
+        UnityWebRequest tokenRequest = UnityWebRequest.Post(API_LOGIN_URL, authenticationFormData);
+        await WaitForRequest(tokenRequest.SendWebRequest());
 
-        var content = new FormUrlEncodedContent(values);
-        var response = await client.PostAsync(requestUrl, content);
-        var responseString = await response.Content.ReadAsStringAsync();
-        requestUrl = "https://testhost-laravel.herokuapp.com/api/login";
-        response = await client.PostAsync(requestUrl, content);
-        responseString = await response.Content.ReadAsStringAsync();
-        token = JsonConvert.DeserializeObject<dynamic>(responseString).token.Value;
+        string token = JsonConvert.DeserializeObject<dynamic>(tokenRequest.downloadHandler.text).token.Value;
 
         return token;
     }
@@ -50,18 +55,16 @@ public static class ApiController
     {
         if (token == null)
         {
-            string token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
+            token = await getToken("nikola.s.sotirov@gmail.com", "asdf");
         }
 
-        client.DefaultRequestHeaders.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        UnityWebRequest contentRequest = UnityWebRequest.Get(url);
+        contentRequest.SetRequestHeader("Content-Type", "application/json");
+        contentRequest.SetRequestHeader("Bearer", token);
 
-        var response = await client.GetAsync(url);
+        await WaitForRequest(contentRequest.SendWebRequest());
 
-        var responseString = await response.Content.ReadAsStringAsync();
-
-        return responseString;
+        return contentRequest.downloadHandler.text;
     }
 
     public static async Task<User> GetUser()
@@ -124,5 +127,13 @@ public static class ApiController
         planet.unlockingPopularity = deserializedObj.unlocking_popularity;
 
         return planet;
+    }
+
+    private static async Task WaitForRequest(UnityWebRequestAsyncOperation webRequestOperation)
+    {
+        while(webRequestOperation.isDone == false)
+        {
+            await Task.Delay(FRAME_DELAY_MS);
+        }
     }
 }
