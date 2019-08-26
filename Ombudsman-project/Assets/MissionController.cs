@@ -13,16 +13,35 @@ public class MissionController : MonoBehaviour
     public GameObject optionPrefab;
     private Text missionProblem;
     private List<GameObject> options = new List<GameObject>();
+    private ApiController APIController;
 
-    public async void StartMission()
+    private void Start()
+    {
+        APIController = ApiController.GetApiController();
+    }
+
+    public void StartMission()
+    {
+        StartCoroutine(StartMissionCoroutine());
+    }
+
+    private IEnumerator StartMissionCoroutine()
     {
         gameObject.GetComponentInParent<Canvas>().enabled = false;
+        
+        Planet planet = null;
+        yield return StartCoroutine(APIController.GetPlanet(1, (Planet requestPlanet) => 
+        {
+            planet = requestPlanet;
+        }));
+        
+        Node node = null;
+        yield return APIController.GetNode(41, (Node requestNode) =>
+        {
+            node = requestNode;
+        });
 
-        Planet planet = await ApiController.GetPlanet(1);
-
-        Node node = await ApiController.GetNode(41);
-
-        loadNode(node);
+        StartCoroutine(LoadNode(node));
     }
 
     public void EndMission(Node node) {
@@ -55,10 +74,11 @@ public class MissionController : MonoBehaviour
         options.Clear();
     }
 
-    public async void loadNode(Node node) {
+    public IEnumerator LoadNode(Node node)
+    {
         missionProblem = GameObject.Find("Problem").GetComponent<Text>();
         if (node == null) {
-            return;
+            yield break;
         }
 
         missionProblem.text = node.dialog;
@@ -74,30 +94,28 @@ public class MissionController : MonoBehaviour
         if (node.options.Count == 0) {
             EndMission(node);
         } else {
-
-            Task<Node>[] tasks = new Task<Node>[node.options.Count];
-            for(int i = 0; i < node.options.Count; i++)
-            {
-                tasks[i] = ApiController.GetNode(node.options[i].id);
-            }
-            await Task.WhenAll(tasks);
-
+            
             for (int i = 0; i < node.options.Count; i++)
             {
-                var option = Instantiate(optionPrefab, missionProblem.transform);
-                option.name = "Option" + i;
-                option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (i + 1)*100, missionProblem.transform.position.z);
-
-                if (node.options[i].speaker != "player" || node.options.Count == 1)
+                int nodeIndex = i;
+                StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
                 {
-                    option.GetComponentInChildren<Text>().text = "->";
-                }
-                else {
-                    option.GetComponentInChildren<Text>().text = node.options[i].dialog;
-                }
+                    var option = Instantiate(optionPrefab, missionProblem.transform);
+                    option.name = "Option" + requestedNode.id;
+                    option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (nodeIndex + 1) * 100, missionProblem.transform.position.z);
 
-                option.GetComponent<Info>().node = tasks[i].Result;
-                options.Add(option);
+                    if (node.options[nodeIndex].speaker != "player" || node.options.Count == 1)
+                    {
+                        option.GetComponentInChildren<Text>().text = "->";
+                    }
+                    else
+                    {
+                        option.GetComponentInChildren<Text>().text = requestedNode.dialog;
+                    }
+                    
+                    option.GetComponent<Info>().node = requestedNode;
+                    options.Add(option);
+                }));
             }
         }
     }

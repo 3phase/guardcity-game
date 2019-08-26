@@ -7,6 +7,6 @@ public class Info : MonoBehaviour
     public Node node { get; set; }
 
     public void NextNode() {
-        GameObject.Find("MissionPanel").GetComponent<MissionController>().loadNode(node); 
+        StartCoroutine(FindObjectOfType<MissionController>().LoadNode(node)); 
     }
 }

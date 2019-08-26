@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Gains : MonoBehaviour
+[System.Serializable]
+public class Gains
 {
     public int popularity;
     public int trust;
