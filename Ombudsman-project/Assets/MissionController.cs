@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -11,24 +13,30 @@ public class MissionController : MonoBehaviour
 {
     Mission mission;
     public GameObject optionPrefab;
-    private Text missionProblem;
+
+    [SerializeField]
+    private TMP_Text missionProblem;
+
+    [SerializeField]
+    private Button startButton;
+
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
 
     private void Start()
     {
         APIController = ApiController.GetApiController();
+        startButton.onClick.AddListener(StartMission);
     }
 
     public void StartMission()
     {
+        startButton.gameObject.SetActive(false);
         StartCoroutine(StartMissionCoroutine());
     }
 
     private IEnumerator StartMissionCoroutine()
     {
-        gameObject.GetComponentInParent<Canvas>().enabled = false;
-        
         Planet planet = null;
         yield return StartCoroutine(APIController.GetPlanet(1, (Planet requestPlanet) => 
         {
@@ -45,14 +53,13 @@ public class MissionController : MonoBehaviour
     }
 
     public void EndMission(Node node) {
-        missionProblem = GameObject.Find("Problem").GetComponent<Text>();
         missionProblem.text = node.dialog;
 
         var option = Instantiate(optionPrefab, missionProblem.transform);
         option.name = "End Mission";
         option.transform.position = new Vector3(missionProblem.transform.position.x,
                 missionProblem.transform.position.y - 100, missionProblem.transform.position.z);
-        option.GetComponentInChildren<Text>().text = "Край на мисията";
+        option.GetComponentInChildren<TMP_Text>().text = "Край на мисията";
         option.GetComponent<Button>().onClick.AddListener(delegate { DestroyCanvas(); });
     }
 
@@ -76,11 +83,9 @@ public class MissionController : MonoBehaviour
 
     public IEnumerator LoadNode(Node node)
     {
-        missionProblem = GameObject.Find("Problem").GetComponent<Text>();
         if (node == null) {
             yield break;
         }
-
         missionProblem.text = node.dialog;
 
         //Profile.gains.popularity += node.gains.popularity;
@@ -106,11 +111,11 @@ public class MissionController : MonoBehaviour
 
                     if (node.options[nodeIndex].speaker != "player" || node.options.Count == 1)
                     {
-                        option.GetComponentInChildren<Text>().text = "->";
+                        option.GetComponentInChildren<TMP_Text>().text = "->";
                     }
                     else
                     {
-                        option.GetComponentInChildren<Text>().text = requestedNode.dialog;
+                        option.GetComponentInChildren<TMP_Text>().text = requestedNode.dialog;
                     }
                     
                     option.GetComponent<Info>().node = requestedNode;
