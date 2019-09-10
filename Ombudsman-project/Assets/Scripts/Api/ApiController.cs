@@ -26,9 +26,9 @@ public class ApiController : MonoBehaviour
     private delegate void WebRequestOnDataReceiveDelegate(string responseContent);
     private delegate void WebRequestOnFinishDelegate();
 
-    private static readonly string LOGIN_URL = "http://testhost-laravel.herokuapp.com/login";
-    private static readonly string API_URL = "http://testhost-laravel.herokuapp.com/api/";
-    private static readonly string API_LOGIN_URL = "http://testhost-laravel.herokuapp.com/api/login";
+    private static readonly string LOGIN_URL = "https://testhost-laravel.herokuapp.com/login";
+    private static readonly string API_URL = "https://testhost-laravel.herokuapp.com/api/";
+    private static readonly string API_LOGIN_URL = "https://testhost-laravel.herokuapp.com/api/login";
     private static readonly string API_USERNAME = "nikola.s.sotirov@gmail.com";
     private static readonly string API_PASS = "asdf";
 
