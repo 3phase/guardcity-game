@@ -63,11 +63,10 @@ public class ApiController : MonoBehaviour
 
             APIMissionNode deserializedObj = GetDeserializedJson<APIMissionNode>(responseContent);
 
-            Debug.Log("Get node with text " + deserializedObj.current_node.dialog);
-
             Node node = new Node();
             node.id = deserializedObj.current_node.id;
             node.dialog = deserializedObj.current_node.dialog;
+            node.speaker = deserializedObj.current_node.speaker;
             node.options = new List<Node>();
             foreach (var obj in deserializedObj.options)
             {

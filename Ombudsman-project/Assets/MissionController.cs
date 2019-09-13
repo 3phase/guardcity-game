@@ -29,6 +29,12 @@ public class MissionController : MonoBehaviour
     [SerializeField]
     private float choiceTopMargin;
 
+    [SerializeField]
+    private RectTransform playerAvatar;
+
+    [SerializeField]
+    private RectTransform alienAvatar;
+
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
 
@@ -81,6 +87,7 @@ public class MissionController : MonoBehaviour
             yield break;
         }
         missionProblem.text = node.dialog;
+        
 
         //Profile.gains.popularity += node.gains.popularity;
         // Profile.gains.trust += node.gains.trust;
@@ -89,11 +96,26 @@ public class MissionController : MonoBehaviour
         // Profile.gains.unlocking_trust += node.gains.unlocking_trust;
 
         ClearOptions();
+        
+
+        if (node.speaker == "player")
+        {
+            playerAvatar.gameObject.SetActive(true);
+            alienAvatar.gameObject.SetActive(false);
+        }
+        else
+        {
+            playerAvatar.gameObject.SetActive(false);
+            alienAvatar.gameObject.SetActive(true);
+        }
+
 
         if (node.options.Count == 0) {
             EndMission(node);
-        } else {
-            
+        }
+        else
+        {
+            // Load options
             for (int i = 0; i < node.options.Count; i++)
             {
                 int nodeIndex = i; // because coroutine is asynchronous.
@@ -107,19 +129,13 @@ public class MissionController : MonoBehaviour
                     optionPosition.y = choicesPanelTopY - nodeIndex * (option.rect.height + choiceTopMargin);
                     option.transform.position = optionPosition;
 
-                    if (node.options[nodeIndex].speaker != "player" || node.options.Count == 1)
-                    {
-                        option.GetComponentInChildren<TMP_Text>().text = "->";
-                    }
-                    else
-                    {
-                        option.GetComponentInChildren<TMP_Text>().text = requestedNode.dialog;
-                    }
-                    
+                    option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : requestedNode.dialog;
                     option.GetComponent<Info>().node = requestedNode;
+
                     options.Add(option.gameObject);
                 }));
             }
         }
+
     }
 }
