@@ -12,13 +12,22 @@ using UnityEngine.UI;
 public class MissionController : MonoBehaviour
 {
     Mission mission;
-    public GameObject optionPrefab;
+    public RectTransform optionPrefab;
 
     [SerializeField]
     private TMP_Text missionProblem;
 
     [SerializeField]
     private Button startButton;
+
+    [SerializeField]
+    private Button missionEndButton;
+
+    [SerializeField]
+    private RectTransform choicesPanel;
+
+    [SerializeField]
+    private float choiceTopMargin;
 
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
@@ -53,23 +62,7 @@ public class MissionController : MonoBehaviour
     }
 
     public void EndMission(Node node) {
-        missionProblem.text = node.dialog;
-
-        var option = Instantiate(optionPrefab, missionProblem.transform);
-        option.name = "End Mission";
-        option.transform.position = new Vector3(missionProblem.transform.position.x,
-                missionProblem.transform.position.y - 100, missionProblem.transform.position.z);
-        option.GetComponentInChildren<TMP_Text>().text = "Край на мисията";
-        option.GetComponent<Button>().onClick.AddListener(delegate { DestroyCanvas(); });
-    }
-
-    private void DestroyCanvas() {
-        var canvas = GameObject.Find("MissionPanel").GetComponent<CanvasGroup>();
-        canvas.alpha = 0;
-        canvas.interactable = false;
-        canvas.blocksRaycasts = false;
-
-        return;
+        missionEndButton.gameObject.SetActive(true);
     }
 
     public void ClearOptions() {
@@ -84,6 +77,7 @@ public class MissionController : MonoBehaviour
     public IEnumerator LoadNode(Node node)
     {
         if (node == null) {
+            Debug.LogError("node == null");
             yield break;
         }
         missionProblem.text = node.dialog;
@@ -102,12 +96,16 @@ public class MissionController : MonoBehaviour
             
             for (int i = 0; i < node.options.Count; i++)
             {
-                int nodeIndex = i;
+                int nodeIndex = i; // because coroutine is asynchronous.
                 StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
                 {
-                    var option = Instantiate(optionPrefab, missionProblem.transform);
+                    var option = Instantiate(optionPrefab, choicesPanel.transform);
                     option.name = "Option" + requestedNode.id;
-                    option.transform.position = new Vector3(missionProblem.transform.position.x, missionProblem.transform.position.y - (nodeIndex + 1) * 100, missionProblem.transform.position.z);
+                    
+                    float choicesPanelTopY = choicesPanel.transform.position.y + choicesPanel.rect.height / 2 - option.rect.height / 2 + nodeIndex;
+                    Vector3 optionPosition = choicesPanel.transform.position;
+                    optionPosition.y = choicesPanelTopY - nodeIndex * (option.rect.height + choiceTopMargin);
+                    option.transform.position = optionPosition;
 
                     if (node.options[nodeIndex].speaker != "player" || node.options.Count == 1)
                     {
@@ -119,7 +117,7 @@ public class MissionController : MonoBehaviour
                     }
                     
                     option.GetComponent<Info>().node = requestedNode;
-                    options.Add(option);
+                    options.Add(option.gameObject);
                 }));
             }
         }
