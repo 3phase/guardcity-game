@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6626253448858802756}
   - component: {fileID: 6626253448858802757}
+  - component: {fileID: 3881999069292887386}
   m_Layer: 0
   m_Name: APIController
   m_TagString: Untagged
@@ -41,5 +42,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f89cbd6114f18994bbc95128968e721e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3881999069292887386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6626253448858802758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6e7f0f6524a4ae499df311c27b43b59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

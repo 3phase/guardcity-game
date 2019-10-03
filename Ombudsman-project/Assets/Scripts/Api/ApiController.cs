@@ -22,6 +22,7 @@ public class ApiController : MonoBehaviour
     public delegate void WebRequestOnNodeReceive(Node node);
     public delegate void WebRequestOnMissionReceive(Mission mission);
     public delegate void WebRequestOnPlanetReceive(Planet planet);
+    public delegate void WebRequestOnPlanetsReceive(List<Planet> planets);
 
     private delegate void WebRequestOnDataReceiveDelegate(string responseContent);
     private delegate void WebRequestOnFinishDelegate();
@@ -114,6 +115,16 @@ public class ApiController : MonoBehaviour
             Planet planet = GetDeserializedJson<Planet>(responseContent);
 
             onPlanetReceiveDelegate(planet);
+        }));
+    }
+
+    public IEnumerator GetPlanetsInRange(int startRangePopularity, int endRangePopularity, WebRequestOnPlanetsReceive onPlanetsReceiveDelegate)
+    {
+        yield return StartCoroutine(MakeAPIRequest("planets/between/" + startRangePopularity + "/" + endRangePopularity, (string responseContent) =>
+        {
+            APIPlanetList planetList = GetDeserializedJson<APIPlanetList>(responseContent);
+            
+            onPlanetsReceiveDelegate(planetList.planets);
         }));
     }
 
