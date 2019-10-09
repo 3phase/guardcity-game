@@ -37,10 +37,12 @@ public class MissionController : MonoBehaviour
 
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
+    private GainsController gainsController;
 
     private void Start()
     {
         APIController = ApiController.GetApiController();
+        gainsController = GainsController.GetGainsController();
         startButton.onClick.AddListener(StartMission);
     }
 
@@ -86,14 +88,8 @@ public class MissionController : MonoBehaviour
             Debug.LogError("node == null");
             yield break;
         }
-        missionProblem.text = node.dialog;
-        
 
-        //Profile.gains.popularity += node.gains.popularity;
-        // Profile.gains.trust += node.gains.trust;
-        //Profile.gains.energy += node.gains.energy;
-        //Profile.gains.days += node.gains.days;
-        // Profile.gains.unlocking_trust += node.gains.unlocking_trust;
+        missionProblem.text = node.dialog;
 
         ClearOptions();
         
@@ -115,12 +111,16 @@ public class MissionController : MonoBehaviour
         }
         else
         {
+            GainsController.GetGainsController().UpdateGains(node.gains);
+
             // Load options
             for (int i = 0; i < node.options.Count; i++)
             {
                 int nodeIndex = i; // because coroutine is asynchronous.
                 StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
                 {
+                    requestedNode.gains = node.options[nodeIndex].gains; // Workaround because gains is not in current_node in json.
+
                     var option = Instantiate(optionPrefab, choicesPanel.transform);
                     option.name = "Option" + requestedNode.id;
                     

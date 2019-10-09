@@ -20,11 +20,10 @@ public class APIBaseNode
 }
 
 [System.Serializable]
-public class APIPivotNode : APIBaseNode
+public class APIGainsNode : APIBaseNode
 {
-    Pivot pivot;
+    public Gains gains;
 }
-
 
 [System.Serializable]
 public class APIMissionNode
@@ -37,7 +36,7 @@ public class APIMissionNode
 [System.Serializable]
 public class APINodeOption
 {
-    public APIBaseNode node;
-    public Gains gains;
+    public APIGainsNode node;
+    public int unlocking_trust;
 }
 

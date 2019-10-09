@@ -5,19 +5,51 @@ using UnityEngine.UI;
 
 public class GainsController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private Gains gains = new Gains();
+    
+    [SerializeField]
+    private ResourceView popularity;
+
+    [SerializeField]
+    private ResourceView energy;
+
+    [SerializeField]
+    private ResourceView trust;
+
+    [SerializeField]
+    private ResourceView days;
+
+    private static GainsController gainsController;
+    
+    public static GainsController GetGainsController()
     {
-        
+        return gainsController;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        GameObject.Find("popularity").GetComponent<Text>().text = Profile.gains.popularity + "";
-        GameObject.Find("trust").GetComponent<Text>().text = Profile.gains.trust + "";
-        GameObject.Find("energy").GetComponent<Text>().text = Profile.gains.energy + "";
-        GameObject.Find("days").GetComponent<Text>().text = Profile.gains.days + "";
-        GameObject.Find("unlocking_trust").GetComponent<Text>().text = Profile.gains.unlocking_trust + "";
+        if(gainsController)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            gainsController = this;
+        }
+    }
+
+    public void UpdateGains(Gains deltaGains)
+    {
+        gains += deltaGains;
+
+        popularity.SetAmount(gains.popularity);
+        energy.SetAmount(gains.energy);
+        trust.SetAmount(gains.trust);
+        days.SetAmount(gains.days);
+    }
+
+    public Gains GetGains()
+    {
+        return gains;
     }
 }

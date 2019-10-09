@@ -35,7 +35,9 @@ public class ApiController : MonoBehaviour
 
 
     private static string token;
-    
+
+    private static GainsController gainsController;
+
     private static ApiController APIController;
 
 
@@ -69,20 +71,21 @@ public class ApiController : MonoBehaviour
             node.dialog = deserializedObj.current_node.dialog;
             node.speaker = deserializedObj.current_node.speaker;
             node.options = new List<Node>();
+
             foreach (var obj in deserializedObj.options)
             {
+                if(obj.unlocking_trust > gainsController.GetGains().trust) { return;  }
+
                 Node newOption = new Node();
                 
                 newOption.id = obj.node.id;
                 newOption.speaker = obj.node.speaker;
                 newOption.dialog = obj.node.dialog;
-
-                newOption.gains = new Gains();
-                newOption.gains.popularity = obj.gains.popularity;
-                newOption.gains.trust = obj.gains.trust;
-                newOption.gains.energy = obj.gains.energy;
-                newOption.gains.days = obj.gains.days;
-                newOption.gains.unlocking_trust = obj.gains.unlocking_trust;
+                
+                newOption.gains.popularity = obj.node.gains.popularity;
+                newOption.gains.trust = obj.node.gains.trust;
+                newOption.gains.energy = obj.node.gains.energy;
+                newOption.gains.days = obj.node.gains.days;
 
                 node.options.Add(newOption);
             }
@@ -146,6 +149,7 @@ public class ApiController : MonoBehaviour
 
     private void Start()
     {
+        gainsController = GainsController.GetGainsController();
         StartCoroutine(GetToken(API_USERNAME, API_PASS));
     }
 
