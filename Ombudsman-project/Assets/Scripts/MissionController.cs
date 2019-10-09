@@ -117,16 +117,19 @@ public class MissionController : MonoBehaviour
             for (int i = 0; i < node.options.Count; i++)
             {
                 int nodeIndex = i; // because coroutine is asynchronous.
+                
                 StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
                 {
                     requestedNode.gains = node.options[nodeIndex].gains; // Workaround because gains is not in current_node in json.
 
                     var option = Instantiate(optionPrefab, choicesPanel.transform);
                     option.name = "Option" + requestedNode.id;
-                    
-                    float choicesPanelTopY = choicesPanel.transform.position.y + choicesPanel.rect.height / 2 - option.rect.height / 2 + nodeIndex;
+
                     Vector3 optionPosition = choicesPanel.transform.position;
-                    optionPosition.y = choicesPanelTopY - nodeIndex * (option.rect.height + choiceTopMargin);
+
+                    float yOffset = (3 - nodeIndex) * (option.rect.height + choiceTopMargin) + choicesPanel.rect.height / 4; 
+                    float choicesPanelTopY = choicesPanel.transform.position.y + choicesPanel.rect.height / 2 - option.rect.height / 2;
+                    optionPosition.y = choicesPanelTopY - yOffset;
                     option.transform.position = optionPosition;
 
                     option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : requestedNode.dialog;
@@ -136,6 +139,8 @@ public class MissionController : MonoBehaviour
                 }));
             }
         }
+
+        
 
     }
 }
