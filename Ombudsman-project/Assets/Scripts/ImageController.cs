@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class ImageController : MonoBehaviour
 {
-    public delegate void TextureDelegate(Texture texture);
+    public delegate void TextureDelegate(Texture2D texture);
 
     public void GetTexture(string path, TextureDelegate OnGetTextureDelegate)
     {
         path = path.Split('.')[0]; // workaround due to extension included in api.
 
-        Texture resourcesTexture = Resources.Load<Texture>(path);
+        Texture2D resourcesTexture = Resources.Load<Texture2D>(path);
         if(resourcesTexture == null)
         {
             throw new UnityException("Failed to get image " + path + " locally. Getting texture from server not implemented yet!");

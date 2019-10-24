@@ -15,9 +15,12 @@ public class PlanetView : MonoBehaviour
     [SerializeField]
     Button button;
 
-    public void InitializePlanet(Texture texture, string name)
+    int planetId;
+
+    public void InitializePlanet(Texture2D texture, string name)
     {
-        image.material.mainTexture = texture;
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        image.sprite = sprite;
         nameText.text = name;
         
         button.onClick.AddListener(() =>
@@ -29,7 +32,7 @@ public class PlanetView : MonoBehaviour
     private IEnumerator LoadPlanet()
     {
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Planet", LoadSceneMode.Additive);
-        
+
         while (!asyncLoad.isDone)
         {
             yield return new WaitForEndOfFrame();

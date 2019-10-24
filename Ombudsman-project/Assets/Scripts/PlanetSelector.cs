@@ -37,9 +37,9 @@ public class PlanetSelector : MonoBehaviour
             {
                 Vector3 planetLocation = planetSelectionPanel.transform.position;
                 planetLocation.x = planetSideOffset * (planetIndex + 1);
-                imageController.GetTexture(planet.image_filename, (Texture texture) =>
+
+                imageController.GetTexture(planet.image_filename, (Texture2D texture) =>
                 {
-                    Debug.Log("Load " + planet.name);
                     PlanetView planetView = Instantiate(planetViewPrefab, planetSelectionPanel);
                     planetView.InitializePlanet(texture, planet.name);
                     planetView.transform.position = planetLocation;
