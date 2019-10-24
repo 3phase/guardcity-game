@@ -17,11 +17,11 @@ public class PlanetView : MonoBehaviour
 
     int planetId;
 
-    public void InitializePlanet(Texture2D texture, string name)
+    public void InitializePlanet(Sprite sprite, string name, int planetId)
     {
-        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         image.sprite = sprite;
         nameText.text = name;
+        this.planetId = planetId;
         
         button.onClick.AddListener(() =>
         {
@@ -32,12 +32,24 @@ public class PlanetView : MonoBehaviour
     private IEnumerator LoadPlanet()
     {
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Planet", LoadSceneMode.Additive);
+        
+        Planet planetInfo = null;
+        Coroutine coroutine = StartCoroutine(FindObjectOfType<ApiController>().GetPlanet(planetId, (Planet detailedPlanetInfo) =>
+        {
+            planetInfo = detailedPlanetInfo;
+            Debug.Log("Alien count: " + detailedPlanetInfo.aliens.Count);
+            Debug.Log("Alien position count: " + detailedPlanetInfo.alien_coordinates.Count);
+        }));
 
         while (!asyncLoad.isDone)
         {
             yield return new WaitForEndOfFrame();
         }
+        yield return coroutine;
         
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Planet"));
+
+        PlanetController planetController = FindObjectOfType<PlanetController>();
+        planetController.InitializePlanet(planetInfo);
     }
 }

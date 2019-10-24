@@ -180,7 +180,7 @@ public class ApiController : MonoBehaviour
     private IEnumerator RequestDataCoroutine(UnityWebRequest request, WebRequestOnDataReceiveDelegate dataDelegate)
     {
         yield return RequestCoroutine(request);
-
+        Debug.Log("Got data " + request.downloadHandler.text);
         dataDelegate(request.downloadHandler.text);
     }
 

@@ -38,10 +38,10 @@ public class PlanetSelector : MonoBehaviour
                 Vector3 planetLocation = planetSelectionPanel.transform.position;
                 planetLocation.x = planetSideOffset * (planetIndex + 1);
 
-                imageController.GetTexture(planet.image_filename, (Texture2D texture) =>
+                imageController.GetSprite(planet.image_filename, (Sprite sprite) =>
                 {
                     PlanetView planetView = Instantiate(planetViewPrefab, planetSelectionPanel);
-                    planetView.InitializePlanet(texture, planet.name);
+                    planetView.InitializePlanet(sprite, planet.name, planet.id);
                     planetView.transform.position = planetLocation;
                 });
                 planetIndex++;
