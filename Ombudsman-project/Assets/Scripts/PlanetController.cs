@@ -47,6 +47,9 @@ public class PlanetController : MonoBehaviour
         });
 
         LoadAliens();
+
+        canvas.sortingOrder = 25;
+        canvas.overrideSorting = true;
     }
 
 
@@ -89,5 +92,10 @@ public class PlanetController : MonoBehaviour
         }
 
         return new Vector2(-1, -1);
+    }
+
+    public Planet GetPlanetInfo()
+    {
+        return planetInfo;
     }
 }

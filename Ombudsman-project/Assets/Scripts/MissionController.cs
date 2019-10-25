@@ -16,6 +16,9 @@ public class MissionController : MonoBehaviour
     public RectTransform optionPrefab;
 
     [SerializeField]
+    private Canvas canvas;
+
+    [SerializeField]
     private TMP_Text missionProblem;
 
     [SerializeField]
@@ -32,6 +35,9 @@ public class MissionController : MonoBehaviour
 
     [SerializeField]
     private Avatar alienAvatar;
+
+    [SerializeField]
+    private Image backgroundImage;
 
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
@@ -52,15 +58,25 @@ public class MissionController : MonoBehaviour
         this.alien = alien;
 
         ImageController imageController = FindObjectOfType<ImageController>();
+
+        imageController.GetSprite(FindObjectOfType<PlanetController>().GetPlanetInfo().background_image, (Sprite sprite) =>
+        {
+            backgroundImage.sprite = sprite;
+        });
+
         imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
         {
             alienAvatar.SetAvatar(sprite, alien.GetAlienInfo().name);
         });
 
+        
+
         if(startingMissionNode == -1)
         {
             throw new UnityException("Attempting to start mission when there are no more missions with this alien!");
         }
+
+
         StartCoroutine(StartMissionCoroutine(startingMissionNode));
     }
 
@@ -71,6 +87,9 @@ public class MissionController : MonoBehaviour
         {
             node = requestNode;
         });
+
+        canvas.sortingOrder = 50;
+        canvas.overrideSorting = true;
 
         StartCoroutine(LoadNode(node));
     }
