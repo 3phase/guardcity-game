@@ -36,7 +36,9 @@ public class ResourceView : MonoBehaviour
 
     public void SetAmount(int amount)
     {
+        // Dont use because for some reason it doesn't work.
         int delta = amount - this.amount;
+
         Alter(amount);
     }
 

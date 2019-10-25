@@ -303,6 +303,11 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6032566973121828437, guid: 4e53810639ee11b4dae1d9e700a40b87,
+        type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6032566973538680624, guid: 4e53810639ee11b4dae1d9e700a40b87,
         type: 3}
       propertyPath: m_Color.a

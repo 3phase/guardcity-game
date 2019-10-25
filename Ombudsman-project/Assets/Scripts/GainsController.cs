@@ -40,12 +40,15 @@ public class GainsController : MonoBehaviour
 
     public void UpdateGains(Gains deltaGains)
     {
-        gains += deltaGains;
+        gains.popularity += deltaGains.popularity;
+        gains.trust += deltaGains.trust;
+        gains.energy += deltaGains.energy;
+        gains.days += deltaGains.days;
 
-        popularity.SetAmount(gains.popularity);
-        energy.SetAmount(gains.energy);
-        trust.SetAmount(gains.trust);
-        days.SetAmount(gains.days);
+        popularity.Alter(deltaGains.popularity);
+        energy.Alter(deltaGains.energy);
+        trust.Alter(deltaGains.trust);
+        days.Alter(deltaGains.days);
     }
 
     public Gains GetGains()

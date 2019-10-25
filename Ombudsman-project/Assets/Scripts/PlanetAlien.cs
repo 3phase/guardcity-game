@@ -15,7 +15,7 @@ public class PlanetAlien : MonoBehaviour
     Alien alienInfo;
 
     int missionNodeId = 1;
-
+    
 
     private void Awake()
     {
@@ -44,7 +44,13 @@ public class PlanetAlien : MonoBehaviour
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Mission"));
 
         MissionController missionController = FindObjectOfType<MissionController>();
-        missionController.StartMission(mission.starting_node_id, alienInfo);
+        missionController.StartMission(mission.starting_node_id, this);
+    }
+
+    public void CompleteMission()
+    {
+        // TODO: More stuff should probably be here.
+        missionNodeId++;
     }
 
 
@@ -56,5 +62,10 @@ public class PlanetAlien : MonoBehaviour
         {
             button.image.sprite = sprite;
         });
+    }
+
+    public Alien GetAlienInfo()
+    {
+        return alienInfo;
     }
 }

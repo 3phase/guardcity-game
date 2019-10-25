@@ -279,7 +279,7 @@ GameObject:
   - component: {fileID: 977515807}
   - component: {fileID: 977515806}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: MissionCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -343,7 +343,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_TargetDisplay: 0
 --- !u!224 &977515809
 RectTransform:
@@ -578,6 +578,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d723d42ff0fd1a408a7924c375dc40b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  image: {fileID: 0}
+  nameText: {fileID: 0}
 --- !u!1001 &6626253449452016963
 PrefabInstance:
   m_ObjectHideFlags: 0

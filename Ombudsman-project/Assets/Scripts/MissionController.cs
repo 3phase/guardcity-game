@@ -7,11 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MissionController : MonoBehaviour
 {
-    Mission mission;
+
     public RectTransform optionPrefab;
 
     [SerializeField]
@@ -36,18 +37,24 @@ public class MissionController : MonoBehaviour
     private ApiController APIController;
     private GainsController gainsController;
 
+    private Mission mission;
+
+    private PlanetAlien alien;
+
     private void Start()
     {
         APIController = ApiController.GetApiController();
         gainsController = GainsController.GetGainsController();
     }
 
-    public void StartMission(int startingMissionNode, Alien alien)
+    public void StartMission(int startingMissionNode, PlanetAlien alien)
     {
+        this.alien = alien;
+
         ImageController imageController = FindObjectOfType<ImageController>();
-        imageController.GetSprite(alien.picture_path, (Sprite sprite) =>
+        imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
         {
-            alienAvatar.SetAvatar(sprite, alien.name);
+            alienAvatar.SetAvatar(sprite, alien.GetAlienInfo().name);
         });
 
         if(startingMissionNode == -1)
@@ -71,8 +78,19 @@ public class MissionController : MonoBehaviour
 
     public void EndMission(Node node) {
         missionEndButton.gameObject.SetActive(true);
+        missionEndButton.onClick.AddListener(() =>
+        {
+            alien.CompleteMission();
+
+            AsyncOperation asyncOperation = SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
+
+            Scene planetScene = SceneManager.GetSceneByName("Planet");
+            SceneManager.SetActiveScene(planetScene);
+            missionEndButton.gameObject.SetActive(false);
+        });
     }
 
+        
     public void ClearOptions() {
         foreach (var option in options)
         {
@@ -120,6 +138,9 @@ public class MissionController : MonoBehaviour
                 StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
                 {
                     requestedNode.gains = node.options[nodeIndex].gains; // Workaround because gains is not in current_node in json.
+                    Debug.Log("Load option with gain trust " + requestedNode.gains.trust);
+                    Debug.Log("Load option with gain pop " + requestedNode.gains.popularity);
+                    Debug.Log("Load option with gain energy " + requestedNode.gains.energy);
 
                     var option = Instantiate(optionPrefab, choicesPanel.transform);
                     option.name = "Option" + requestedNode.id;
