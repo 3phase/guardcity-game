@@ -18,9 +18,6 @@ public class MissionController : MonoBehaviour
     private TMP_Text missionProblem;
 
     [SerializeField]
-    private Button startButton;
-
-    [SerializeField]
     private Button missionEndButton;
 
     [SerializeField]
@@ -30,10 +27,10 @@ public class MissionController : MonoBehaviour
     private float choiceTopMargin;
 
     [SerializeField]
-    private RectTransform playerAvatar;
+    private Avatar playerAvatar;
 
     [SerializeField]
-    private RectTransform alienAvatar;
+    private Avatar alienAvatar;
 
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
@@ -43,31 +40,34 @@ public class MissionController : MonoBehaviour
     {
         APIController = ApiController.GetApiController();
         gainsController = GainsController.GetGainsController();
-        startButton.onClick.AddListener(StartMission);
     }
 
-    public void StartMission()
+    public void StartMission(int startingMissionNode, Alien alien)
     {
-        startButton.gameObject.SetActive(false);
-        StartCoroutine(StartMissionCoroutine());
-    }
-
-    private IEnumerator StartMissionCoroutine()
-    {
-        Planet planet = null;
-        yield return StartCoroutine(APIController.GetPlanet(1, (Planet requestPlanet) => 
+        ImageController imageController = FindObjectOfType<ImageController>();
+        imageController.GetSprite(alien.picture_path, (Sprite sprite) =>
         {
-            planet = requestPlanet;
-        }));
-        
+            alienAvatar.SetAvatar(sprite, alien.name);
+        });
+
+        if(startingMissionNode == -1)
+        {
+            throw new UnityException("Attempting to start mission when there are no more missions with this alien!");
+        }
+        StartCoroutine(StartMissionCoroutine(startingMissionNode));
+    }
+
+    private IEnumerator StartMissionCoroutine(int startingMissionNode)
+    {
         Node node = null;
-        yield return APIController.GetNode(41, (Node requestNode) =>
+        yield return APIController.GetNode(startingMissionNode, (Node requestNode) =>
         {
             node = requestNode;
         });
 
         StartCoroutine(LoadNode(node));
     }
+
 
     public void EndMission(Node node) {
         missionEndButton.gameObject.SetActive(true);
@@ -106,13 +106,12 @@ public class MissionController : MonoBehaviour
         }
 
 
+        GainsController.GetGainsController().UpdateGains(node.gains);
         if (node.options.Count == 0) {
             EndMission(node);
         }
         else
         {
-            GainsController.GetGainsController().UpdateGains(node.gains);
-
             // Load options
             for (int i = 0; i < node.options.Count; i++)
             {

@@ -95,16 +95,11 @@ public class ApiController : MonoBehaviour
     }
 
 
-    public IEnumerator GetMission(int alien_id, int mission_id, WebRequestOnMissionReceive onMissionReceiveDelegate)
+    public IEnumerator GetMission(int alien_id, int mission_order, WebRequestOnMissionReceive onMissionReceiveDelegate)
     {
-        yield return StartCoroutine(MakeAPIRequest(string.Format("alien/{0}/mission/{1}", alien_id, mission_id), (string responseContent) =>
+        yield return StartCoroutine(MakeAPIRequest(string.Format("alien/{0}/mission/{1}", alien_id, mission_order), (string responseContent) =>
         {
-            dynamic deserializedObj = GetDeserializedJson<Mission>(responseContent);
-
-            var mission = new Mission();
-
-            mission.alien = deserializedObj.alien;
-            mission.current_node_id = deserializedObj.starting_node_id;
+            Mission mission = GetDeserializedJson<Mission>(responseContent);
 
             onMissionReceiveDelegate(mission);
         }));
@@ -180,7 +175,7 @@ public class ApiController : MonoBehaviour
     private IEnumerator RequestDataCoroutine(UnityWebRequest request, WebRequestOnDataReceiveDelegate dataDelegate)
     {
         yield return RequestCoroutine(request);
-        Debug.Log("Got data " + request.downloadHandler.text);
+
         dataDelegate(request.downloadHandler.text);
     }
 
@@ -212,6 +207,8 @@ public class ApiController : MonoBehaviour
 
         Debug.Log("Got token: " + token);
     }
+
+
 
 
     private IEnumerator MakeAPIRequest(string value, WebRequestOnDataReceiveDelegate onDataReceiveDelegate)

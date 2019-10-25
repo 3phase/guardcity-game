@@ -37,8 +37,6 @@ public class PlanetView : MonoBehaviour
         Coroutine coroutine = StartCoroutine(FindObjectOfType<ApiController>().GetPlanet(planetId, (Planet detailedPlanetInfo) =>
         {
             planetInfo = detailedPlanetInfo;
-            Debug.Log("Alien count: " + detailedPlanetInfo.aliens.Count);
-            Debug.Log("Alien position count: " + detailedPlanetInfo.alien_coordinates.Count);
         }));
 
         while (!asyncLoad.isDone)
