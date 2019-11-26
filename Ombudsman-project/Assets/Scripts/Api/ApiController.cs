@@ -27,11 +27,15 @@ public class ApiController : MonoBehaviour
     private delegate void WebRequestOnDataReceiveDelegate(string responseContent);
     private delegate void WebRequestOnFinishDelegate();
 
+
     private static readonly string LOGIN_URL = "https://testhost-laravel.herokuapp.com/login";
     private static readonly string API_URL = "https://testhost-laravel.herokuapp.com/api/";
     private static readonly string API_LOGIN_URL = "https://testhost-laravel.herokuapp.com/api/login";
     private static readonly string API_USERNAME = "nikola.s.sotirov@gmail.com";
     private static readonly string API_PASS = "asdf";
+
+    private static readonly float tokenRequestTimeout = 20f; // Longer time because sometimes first request takes really long for some reason.
+    private static readonly float apiRequestTimeout = 50000f;
 
 
     private static string token;
@@ -174,7 +178,7 @@ public class ApiController : MonoBehaviour
 
     private IEnumerator RequestDataCoroutine(UnityWebRequest request, WebRequestOnDataReceiveDelegate dataDelegate)
     {
-        yield return RequestCoroutine(request);
+        yield return request;
 
         dataDelegate(request.downloadHandler.text);
     }
@@ -190,6 +194,7 @@ public class ApiController : MonoBehaviour
 
     private IEnumerator GetToken(string username, string password)
     {
+        Debug.Log("GetToken called!");
         List<IMultipartFormSection> authenticationFormData = new List<IMultipartFormSection>();
         authenticationFormData.Add(new MultipartFormDataSection("email", username));
         authenticationFormData.Add(new MultipartFormDataSection("password", password));
@@ -206,6 +211,22 @@ public class ApiController : MonoBehaviour
         token = JsonUtility.FromJson<Token>(tokenRequest.downloadHandler.text).token;
 
         Debug.Log("Got token: " + token);
+
+        MessageBox messageBox = MessageBoxHandler.boxHandler.DisplayMessage("Failed to get token!", 
+            new MessageBoxChoiceBehaviour("Try Again"),
+            new MessageBoxChoiceBehaviour("Quit", () =>
+            {
+                Application.Quit(-1);
+            })
+        );
+        yield return messageBox.BlockUntilClicked();
+
+        Debug.Log(messageBox.GetClickedOptionIndex());
+        if(messageBox.GetClickedOptionIndex() == 0)
+        {
+            Debug.Log("Call GetToken again!");
+            StartCoroutine(GetToken(username, password));
+        }
     }
 
 
@@ -222,8 +243,19 @@ public class ApiController : MonoBehaviour
         UnityWebRequest contentRequest = UnityWebRequest.Get(url);
         contentRequest.SetRequestHeader("Content-Type", "application/json");
         contentRequest.SetRequestHeader("Bearer", token);
-        
-        yield return StartCoroutine(RequestDataCoroutine(contentRequest, onDataReceiveDelegate));
+
+        float elapsedContentRequestTime = 0;
+        while (contentRequest.isDone == false)
+        {
+            elapsedContentRequestTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+            if (elapsedContentRequestTime >= apiRequestTimeout)
+            {
+                throw new TimeoutException("Failed to make request to API in time!");
+            }
+        }
+
+        onDataReceiveDelegate(contentRequest.downloadHandler.text);
     }
 
     
