@@ -30,6 +30,8 @@ public class PlanetSelector : MonoBehaviour
 
     private IEnumerator LoadPlanets()
     {
+        Debug.Log("Load Planets");
+
         yield return APIController.GetPlanetsInRange(-1, 10, (List<Planet> planets) =>
         {
             int planetIndex = 0; // not using i in a for loop because might be asynchronous.

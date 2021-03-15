@@ -35,7 +35,7 @@ public class ApiController : MonoBehaviour
     private static readonly string API_PASS = "asdf";
 
     private static readonly float tokenRequestTimeout = 20f; // Longer time because sometimes first request takes really long for some reason.
-    private static readonly float apiRequestTimeout = 50000f;
+    private static readonly float apiRequestTimeout = 5f;
 
 
     private static string token;
@@ -124,6 +124,7 @@ public class ApiController : MonoBehaviour
     {
         yield return StartCoroutine(MakeAPIRequest("planets/between/" + startRangePopularity + "/" + endRangePopularity, (string responseContent) =>
         {
+            Debug.Log("Got Planets");
             APIPlanetList planetList = GetDeserializedJson<APIPlanetList>(responseContent);
             
             onPlanetsReceiveDelegate(planetList.planets);
@@ -156,18 +157,18 @@ public class ApiController : MonoBehaviour
     private static IEnumerator RequestCoroutine(UnityWebRequest request)
     {
         var operation = request.SendWebRequest();
-        while (operation.isDone == false)
+        while (request.result == UnityWebRequest.Result.InProgress)
         {
             yield return new WaitForEndOfFrame();
         }
 
-        if (request.isNetworkError)
+        if (request.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.LogError("Network error occured while trying to execute request to " + request.url);
             yield break;
         }
 
-        if (request.isHttpError)
+        if (request.result == UnityWebRequest.Result.ProtocolError)
         {
             Debug.LogError("HTTP error occured while trying to execute request to " + request.url + "\n" +
                            "Code returned: " + request.responseCode);
@@ -198,7 +199,7 @@ public class ApiController : MonoBehaviour
         List<IMultipartFormSection> authenticationFormData = new List<IMultipartFormSection>();
         authenticationFormData.Add(new MultipartFormDataSection("email", username));
         authenticationFormData.Add(new MultipartFormDataSection("password", password));
-        
+       
         UnityWebRequest loginRequest = UnityWebRequest.Post(LOGIN_URL, authenticationFormData);
         yield return StartCoroutine(RequestCoroutine(loginRequest));
         Debug.Log("LoginRequest: " + loginRequest.downloadHandler.text);
@@ -208,25 +209,28 @@ public class ApiController : MonoBehaviour
         Debug.Log("TokenRequest: " + tokenRequest.downloadHandler.text);
 
         
+
         token = JsonUtility.FromJson<Token>(tokenRequest.downloadHandler.text).token;
 
-        Debug.Log("Got token: " + token);
-
-        MessageBox messageBox = MessageBoxHandler.boxHandler.DisplayMessage("Failed to get token!", 
-            new MessageBoxChoiceBehaviour("Try Again"),
-            new MessageBoxChoiceBehaviour("Quit", () =>
-            {
-                Application.Quit(-1);
-            })
-        );
-        yield return messageBox.BlockUntilClicked();
-
-        Debug.Log(messageBox.GetClickedOptionIndex());
-        if(messageBox.GetClickedOptionIndex() == 0)
+        if (loginRequest.result != UnityWebRequest.Result.Success)
         {
-            Debug.Log("Call GetToken again!");
-            StartCoroutine(GetToken(username, password));
+            MessageBox messageBox = MessageBoxHandler.boxHandler.DisplayMessage("Failed to get token!",
+                new MessageBoxChoiceBehaviour("Try Again"),
+                new MessageBoxChoiceBehaviour("Quit", () =>
+                {
+                    Application.Quit(-1);
+                })
+            );
+            yield return messageBox.BlockUntilClicked();
+
+            Debug.Log(messageBox.GetClickedOptionIndex());
+            if (messageBox.GetClickedOptionIndex() == 0)
+            {
+                Debug.Log("Call GetToken again!");
+                yield return StartCoroutine(GetToken(username, password));
+            }
         }
+        Debug.Log("End GetToken");
     }
 
 
@@ -240,12 +244,16 @@ public class ApiController : MonoBehaviour
         }
 
         string url = API_URL + value;
+
+        Debug.Log("Start API Request to " + url);
         UnityWebRequest contentRequest = UnityWebRequest.Get(url);
         contentRequest.SetRequestHeader("Content-Type", "application/json");
         contentRequest.SetRequestHeader("Bearer", token);
 
+        StartCoroutine(RequestCoroutine(contentRequest));
+
         float elapsedContentRequestTime = 0;
-        while (contentRequest.isDone == false)
+        while (contentRequest.result == UnityWebRequest.Result.InProgress)
         {
             elapsedContentRequestTime += Time.deltaTime;
             yield return new WaitForEndOfFrame();
@@ -254,6 +262,7 @@ public class ApiController : MonoBehaviour
                 throw new TimeoutException("Failed to make request to API in time!");
             }
         }
+        Debug.Log("Finished API Request to " + url);
 
         onDataReceiveDelegate(contentRequest.downloadHandler.text);
     }
