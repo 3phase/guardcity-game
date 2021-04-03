@@ -39,6 +39,10 @@ public class MissionController : MonoBehaviour
     [SerializeField]
     private Image backgroundImage;
 
+
+    private Dictionary<int, Node> nodeCache = new Dictionary<int, Node>(); // id - node
+    private List<int> nodesLoading = new List<int>();
+
     private List<GameObject> options = new List<GameObject>();
     private ApiController APIController;
     private GainsController gainsController;
@@ -56,18 +60,23 @@ public class MissionController : MonoBehaviour
     public void StartMission(int startingMissionNode, PlanetAlien alien)
     {
         this.alien = alien;
-
-        ImageController imageController = FindObjectOfType<ImageController>();
-
-        imageController.GetSprite(FindObjectOfType<PlanetController>().GetPlanetInfo().background_image, (Sprite sprite) =>
+        if (alien != null)
         {
-            backgroundImage.sprite = sprite;
-        });
+            ImageController imageController = FindObjectOfType<ImageController>();
+            imageController.GetSprite(FindObjectOfType<PlanetController>().GetPlanetInfo().background_image, (Sprite sprite) =>
+            {
+                backgroundImage.sprite = sprite;
+            });
 
-        imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
+            imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
+            {       
+                alienAvatar.SetAvatar(sprite, alien.GetAlienInfo().name);
+            });
+        }
+        else
         {
-            alienAvatar.SetAvatar(sprite, alien.GetAlienInfo().name);
-        });
+            Debug.LogWarning("Starting mission while not connected to alien!");
+        }
 
         
 
@@ -87,9 +96,6 @@ public class MissionController : MonoBehaviour
         {
             node = requestNode;
         });
-
-        canvas.sortingOrder = 50;
-        canvas.overrideSorting = true;
 
         StartCoroutine(LoadNode(node));
     }
@@ -127,7 +133,6 @@ public class MissionController : MonoBehaviour
         }
 
         missionProblem.text = node.dialog;
-
         ClearOptions();
         
 
@@ -149,34 +154,94 @@ public class MissionController : MonoBehaviour
         }
         else
         {
-            // Load options
-            for (int i = 0; i < node.options.Count; i++)
+            /*
+            List<int> ids = new List<int>();
+            node.options.ForEach((Node node) => ids.Add(node.id));
+
+            yield return StartCoroutine(APIController.GetNodes(ids, (List<Node> nodes) =>
             {
-                int nodeIndex = i; // because coroutine is asynchronous.
-                
-                StartCoroutine(APIController.GetNode(node.options[i].id, (Node requestedNode) =>
+                foreach (Node node in nodes)
                 {
-                    requestedNode.gains = node.options[nodeIndex].gains; // Workaround because gains is not in current_node in json.
-                    Debug.Log("Load option with gain trust " + requestedNode.gains.trust);
-                    Debug.Log("Load option with gain pop " + requestedNode.gains.popularity);
-                    Debug.Log("Load option with gain energy " + requestedNode.gains.energy);
-
                     var option = Instantiate(optionPrefab, choicesPanel.transform);
-                    option.name = "Option" + requestedNode.id;
-
-                    Vector3 optionPosition = choicesPanel.transform.position;
-
-                    float yOffset = (3 - nodeIndex) * (option.rect.height + choiceTopMargin) + choicesPanel.rect.height / 4; 
-                    float choicesPanelTopY = choicesPanel.transform.position.y + choicesPanel.rect.height / 2 - option.rect.height / 2;
-                    optionPosition.y = choicesPanelTopY - yOffset;
-                    option.transform.position = optionPosition;
-
-                    option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : requestedNode.dialog;
-                    option.GetComponent<Info>().node = requestedNode;
-
+                    option.name = "Option" + node.id;
+                    option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : node.dialog;
+                    option.GetComponent<Info>().node = node;
                     options.Add(option.gameObject);
+                }
+                // TODO: Gains
+            }));
+            */
+
+            List<Coroutine> coroutineRequests = new List<Coroutine>();
+            List<Node> optionNodes = new List<Node>();
+            Debug.Log("Possible Options Count: " + node.options.Count);
+            foreach(Node option in node.options)
+            {
+                Coroutine requestCoroutine = StartCoroutine(GetNode(option.id, (Node node) =>
+                {
+                    optionNodes.Add(node);
                 }));
+                coroutineRequests.Add(requestCoroutine);
+            }
+
+            while(node.options.Count > optionNodes.Count)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+
+
+            foreach (Node optionNode in optionNodes)
+            {
+                var option = Instantiate(optionPrefab, choicesPanel.transform);
+                option.name = "Option" + optionNode.id;
+                option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : optionNode.dialog;
+                option.GetComponent<Info>().node = optionNode;
+                options.Add(option.gameObject);
+
+                foreach (Node choice in optionNode.options)
+                {
+                    if (nodeCache.ContainsKey(choice.id) == false)
+                    {
+                        StartCoroutine(PreloadNode(choice.id));
+                    }
+                }
             }
         }
+    }
+
+    private IEnumerator GetNode(int nodeId, Action<Node> onNodeLoaded)
+    {
+        Node node;
+        if(nodeCache.TryGetValue(nodeId, out node))
+        {
+            onNodeLoaded(node);
+        }
+        else if(nodesLoading.Contains(nodeId))
+        {
+            while (nodeCache.TryGetValue(nodeId, out node) == false)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+            onNodeLoaded(node);
+        }
+        else
+        {
+            yield return APIController.GetNode(nodeId, (Node node) =>
+            {
+                onNodeLoaded(node);
+            });
+        }
+    }
+
+    private IEnumerator PreloadNode(int nodeId)
+    {
+        nodesLoading.Add(nodeId);
+        yield return APIController.GetNode(nodeId, (Node node) =>
+        {
+            nodeCache.Add(nodeId, node);
+            Debug.Log(node.speaker);
+        });
+        Debug.Log("Successfully Preloaded Node With Id: " + nodeId);
+        nodesLoading.Remove(nodeId);
     }
 }

@@ -20,9 +20,10 @@ public class ApiController : MonoBehaviour
 {
     public delegate void WebRequestOnUserReceive(User user);
     public delegate void WebRequestOnNodeReceive(Node node);
+    public delegate void WebRequestOnNodeListReceive(List<Node> node);
     public delegate void WebRequestOnMissionReceive(Mission mission);
     public delegate void WebRequestOnPlanetReceive(Planet planet);
-    public delegate void WebRequestOnPlanetsReceive(List<Planet> planets);
+    public delegate void WebRequestOnPlanetListReceive(List<Planet> planets);
 
     private delegate void WebRequestOnDataReceiveDelegate(string responseContent);
     private delegate void WebRequestOnFinishDelegate();
@@ -66,8 +67,7 @@ public class ApiController : MonoBehaviour
     {
         yield return StartCoroutine(MakeAPIRequest("mission_node/" + nodeId, (string responseContent) =>
         {
-            Debug.Log("Node json: " + responseContent);
-
+            Debug.Log("Loading Node " + nodeId + ": " + responseContent);
             APIMissionNode deserializedObj = GetDeserializedJson<APIMissionNode>(responseContent);
 
             Node node = new Node();
@@ -77,7 +77,7 @@ public class ApiController : MonoBehaviour
             node.options = new List<Node>();
 
             foreach (var obj in deserializedObj.options)
-            {
+            {   
                 if(obj.unlocking_trust > gainsController.GetGains().trust) { return;  }
 
                 Node newOption = new Node();
@@ -85,16 +85,22 @@ public class ApiController : MonoBehaviour
                 newOption.id = obj.node.id;
                 newOption.speaker = obj.node.speaker;
                 newOption.dialog = obj.node.dialog;
-                
-                newOption.gains.popularity = obj.node.gains.popularity;
-                newOption.gains.trust = obj.node.gains.trust;
-                newOption.gains.energy = obj.node.gains.energy;
-                newOption.gains.days = obj.node.gains.days;
 
+                newOption.gains = obj.node.gains;
                 node.options.Add(newOption);
             }
 
             onNodeReceiveDelegate(node);
+        }));
+    }
+
+    public IEnumerator GetNodes(List<int> nodeIds, WebRequestOnNodeListReceive onNodeListReceiveDelegate)
+    {
+        string nodeRequestString = string.Join(",", nodeIds.ToArray());
+        yield return StartCoroutine(MakeAPIRequest("mission_nodes?node_ids=" + nodeRequestString, (string responseContent) =>
+        {
+            Debug.Log("Multiple Node Id Content: " + responseContent);
+            
         }));
     }
 
@@ -120,7 +126,7 @@ public class ApiController : MonoBehaviour
         }));
     }
 
-    public IEnumerator GetPlanetsInRange(int startRangePopularity, int endRangePopularity, WebRequestOnPlanetsReceive onPlanetsReceiveDelegate)
+    public IEnumerator GetPlanetsInRange(int startRangePopularity, int endRangePopularity, WebRequestOnPlanetListReceive onPlanetsReceiveDelegate)
     {
         yield return StartCoroutine(MakeAPIRequest("planets/between/" + startRangePopularity + "/" + endRangePopularity, (string responseContent) =>
         {
