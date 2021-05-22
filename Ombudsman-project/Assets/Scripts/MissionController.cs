@@ -54,7 +54,7 @@ public class MissionController : MonoBehaviour
     private void Start()
     {
         APIController = ApiController.GetApiController();
-        gainsController = GainsController.GetGainsController();
+        gainsController = GainsController.GetInstance();
     }
 
     public void StartMission(int startingMissionNode, PlanetAlien alien)
@@ -148,7 +148,7 @@ public class MissionController : MonoBehaviour
         }
 
 
-        GainsController.GetGainsController().UpdateGains(node.gains);
+        GainsController.GetInstance().UpdateGains(node.gains);
         if (node.options.Count == 0) {
             EndMission(node);
         }

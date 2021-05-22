@@ -64,7 +64,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -92,6 +92,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac826a576c7eb44618e3eb788a33a909, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultGains:
+    popularity: 5
+    trust: 10
+    energy: 100
+    days: 1
+  energyRestoration: 100
   popularity: {fileID: 3396707257620290617}
   energy: {fileID: 8599052166169144745}
   trust: {fileID: 2145096859880272139}

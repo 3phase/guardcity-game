@@ -5,7 +5,11 @@ using UnityEngine.UI;
 
 public class GainsController : MonoBehaviour
 {
-    private Gains gains = new Gains();
+    [SerializeField]
+    Gains defaultGains;
+
+    [SerializeField]
+    private int energyRestoration;
     
     [SerializeField]
     private ResourceView popularity;
@@ -20,8 +24,11 @@ public class GainsController : MonoBehaviour
     private ResourceView days;
 
     private static GainsController gainsController;
+
+    private Gains gains = new Gains();
+
     
-    public static GainsController GetGainsController()
+    public static GainsController GetInstance()
     {
         return gainsController;
     }
@@ -35,24 +42,27 @@ public class GainsController : MonoBehaviour
         else
         {
             gainsController = this;
+            UpdateGains(defaultGains, false);
         }
     }
 
-    public void UpdateGains(Gains deltaGains)
+    public void UpdateGains(Gains deltaGains, bool useAnimation = true)
     {
-        gains.popularity += deltaGains.popularity;
-        gains.trust += deltaGains.trust;
-        gains.energy += deltaGains.energy;
-        gains.days += deltaGains.days;
+        gains += deltaGains;
 
-        popularity.Alter(deltaGains.popularity);
-        energy.Alter(deltaGains.energy);
-        trust.Alter(deltaGains.trust);
-        days.Alter(deltaGains.days);
+        popularity.Alter(deltaGains.GetPopularity(), useAnimation);
+        energy.Alter(deltaGains.GetEnergy(), useAnimation);
+        trust.Alter(deltaGains.GetTrust(), useAnimation);
+        days.Alter(deltaGains.GetDays(), useAnimation);
     }
 
     public Gains GetGains()
     {
         return gains;
+    }
+
+    public void RestoreEnergy()
+    {
+        UpdateGains(new Gains(0, 0, energyRestoration - gains.GetEnergy(), 1));
     }
 }

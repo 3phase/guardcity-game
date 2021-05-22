@@ -78,7 +78,7 @@ public class ApiController : MonoBehaviour
 
             foreach (var obj in deserializedObj.options)
             {   
-                if(obj.unlocking_trust > gainsController.GetGains().trust) { return;  }
+                if(obj.unlocking_trust > gainsController.GetGains().GetTrust()) { return;  }
 
                 Node newOption = new Node();
                 
@@ -155,7 +155,7 @@ public class ApiController : MonoBehaviour
 
     private void Start()
     {
-        gainsController = GainsController.GetGainsController();
+        gainsController = GainsController.GetInstance();
         StartCoroutine(GetToken(API_USERNAME, API_PASS));
     }
 

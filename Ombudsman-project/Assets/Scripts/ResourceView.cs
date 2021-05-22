@@ -23,15 +23,20 @@ public class ResourceView : MonoBehaviour
     }
 
 
-    public void Alter(int delta)
+    public void Alter(int delta, bool activateAnimation = true)
     {
         if (delta == 0) { return; }
-        
-        animator.SetTrigger(delta > 0 ? animationAddTriggerName : animationSubstractTriggerName);
+
         amount += delta;
 
         deltaText.text = delta.ToString();
         amountText.text = amount.ToString();
+
+        if (activateAnimation)
+        {
+            animator.SetTrigger(delta > 0 ? animationAddTriggerName : animationSubstractTriggerName);
+        }
+
     }
 
     public void SetAmount(int amount)
