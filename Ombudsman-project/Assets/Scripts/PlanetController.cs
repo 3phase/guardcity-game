@@ -41,10 +41,10 @@ public class PlanetController : MonoBehaviour
 
 
         ImageController imageController = FindObjectOfType<ImageController>();
-        imageController.GetSprite(planetInfo.background_image, (Sprite sprite) =>
+        StartCoroutine(imageController.GetSprite(planetInfo.background_image, (Sprite sprite) =>
         {
             backgroundImage.sprite = sprite;
-        });
+        }));
 
         LoadAliens();
 

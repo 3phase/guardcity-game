@@ -63,15 +63,15 @@ public class MissionController : MonoBehaviour
         if (alien != null)
         {
             ImageController imageController = FindObjectOfType<ImageController>();
-            imageController.GetSprite(FindObjectOfType<PlanetController>().GetPlanetInfo().background_image, (Sprite sprite) =>
+            StartCoroutine(imageController.GetSprite(FindObjectOfType<PlanetController>().GetPlanetInfo().background_image, (Sprite sprite) =>
             {
                 backgroundImage.sprite = sprite;
-            });
+            }));
 
-            imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
+            StartCoroutine(imageController.GetSprite(alien.GetAlienInfo().picture_path, (Sprite sprite) =>
             {       
                 alienAvatar.SetAvatar(sprite, alien.GetAlienInfo().name);
-            });
+            }));
         }
         else
         {
@@ -154,24 +154,6 @@ public class MissionController : MonoBehaviour
         }
         else
         {
-            /*
-            List<int> ids = new List<int>();
-            node.options.ForEach((Node node) => ids.Add(node.id));
-
-            yield return StartCoroutine(APIController.GetNodes(ids, (List<Node> nodes) =>
-            {
-                foreach (Node node in nodes)
-                {
-                    var option = Instantiate(optionPrefab, choicesPanel.transform);
-                    option.name = "Option" + node.id;
-                    option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : node.dialog;
-                    option.GetComponent<Info>().node = node;
-                    options.Add(option.gameObject);
-                }
-                // TODO: Gains
-            }));
-            */
-
             List<Coroutine> coroutineRequests = new List<Coroutine>();
             List<Node> optionNodes = new List<Node>();
             Debug.Log("Possible Options Count: " + node.options.Count);
@@ -194,7 +176,13 @@ public class MissionController : MonoBehaviour
             {
                 var option = Instantiate(optionPrefab, choicesPanel.transform);
                 option.name = "Option" + optionNode.id;
-                option.GetComponentInChildren<TMP_Text>().text = node.options.Count == 1 ? "->" : optionNode.dialog;
+
+                string dialogText = node.options.Count == 1 ? "->" : optionNode.id + ": " + optionNode.dialog;
+                if (optionNode.unlocking_trust > GainsController.GetInstance().GetGains().GetTrust())
+                    dialogText = "Locked";
+
+                option.GetComponentInChildren<TMP_Text>().text = dialogText;
+                    
                 option.GetComponent<Info>().node = optionNode;
                 options.Add(option.gameObject);
 

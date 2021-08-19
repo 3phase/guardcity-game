@@ -34,18 +34,18 @@ public class PlanetSelector : MonoBehaviour
 
         yield return APIController.GetPlanetsInRange(-1, 10, (List<Planet> planets) =>
         {
-            int planetIndex = 0; // not using i in a for loop because might be asynchronous.
+            int planetIndex = 0;
             foreach (Planet planet in planets)
             {
                 Vector3 planetLocation = planetSelectionPanel.transform.position;
                 planetLocation.x = planetSideOffset * (planetIndex + 1);
 
-                imageController.GetSprite(planet.image_filename, (Sprite sprite) =>
+                StartCoroutine(imageController.GetSprite(planet.image_filename, (Sprite sprite) =>
                 {
                     PlanetView planetView = Instantiate(planetViewPrefab, planetSelectionPanel);
                     planetView.InitializePlanet(sprite, planet.name, planet.id);
                     planetView.transform.position = planetLocation;
-                });
+                }));
                 planetIndex++;
             }
         });

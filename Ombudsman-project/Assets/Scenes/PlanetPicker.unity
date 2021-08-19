@@ -481,7 +481,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1760861682
 GameObject:
@@ -613,7 +613,7 @@ PrefabInstance:
     - target: {fileID: 6626253448858802756, guid: e845bf438b1122548a53aa0bddd3f951,
         type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6626253448858802756, guid: e845bf438b1122548a53aa0bddd3f951,
         type: 3}
@@ -683,6 +683,7 @@ GameObject:
   - component: {fileID: 1912521200}
   - component: {fileID: 1912521199}
   - component: {fileID: 1912521198}
+  - component: {fileID: 1912521197}
   m_Layer: 5
   m_Name: StatsPanelCanvas
   m_TagString: Untagged
@@ -690,6 +691,23 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1912521197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1912521196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &1912521198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -748,7 +766,7 @@ RectTransform:
   - {fileID: 1578645128731549714}
   - {fileID: 2063235638}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -848,7 +866,7 @@ RectTransform:
   m_Children:
   - {fileID: 178281446}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -980,7 +998,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2013510071
 GameObject:
@@ -1332,6 +1350,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1937962905}
     m_Modifications:
+    - target: {fileID: 4187531589911274425, guid: 6bcf6c661987034448db4b5dc05d9cb8,
+        type: 3}
+      propertyPath: m_Maskable
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6210468408481724865, guid: 6bcf6c661987034448db4b5dc05d9cb8,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1441,6 +1464,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PlanetSelector
+      objectReference: {fileID: 0}
+    - target: {fileID: 8061604871716845159, guid: 6bcf6c661987034448db4b5dc05d9cb8,
+        type: 3}
+      propertyPath: m_Maskable
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6bcf6c661987034448db4b5dc05d9cb8, type: 3}

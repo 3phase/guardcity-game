@@ -58,10 +58,10 @@ public class PlanetAlien : MonoBehaviour
     {
         alienInfo = alien;
         ImageController imageController = FindObjectOfType<ImageController>();
-        imageController.GetSprite(alienInfo.picture_path, (Sprite sprite) =>
+        StartCoroutine(imageController.GetSprite(alienInfo.picture_path, (Sprite sprite) =>
         {
             button.image.sprite = sprite;
-        });
+        }));
     }
 
     public Alien GetAlienInfo()
