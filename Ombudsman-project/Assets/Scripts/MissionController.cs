@@ -149,49 +149,39 @@ public class MissionController : MonoBehaviour
 
 
         GainsController.GetInstance().UpdateGains(node.gains);
+        Debug.Log(node);
+        Debug.Log(node.options);
         if (node.options.Count == 0) {
             EndMission(node);
         }
         else
         {
-            List<Coroutine> coroutineRequests = new List<Coroutine>();
-            List<Node> optionNodes = new List<Node>();
-            Debug.Log("Possible Options Count: " + node.options.Count);
-            foreach(Node option in node.options)
+            if (node.options.Count == 1)
             {
-                Coroutine requestCoroutine = StartCoroutine(GetNode(option.id, (Node node) =>
-                {
-                    optionNodes.Add(node);
-                }));
-                coroutineRequests.Add(requestCoroutine);
+                Node optionNode = node.options[0];
+                StartCoroutine(ResponseDialogue(optionNode.speaker, optionNode.option_player_dialog, optionNode));
             }
-
-            while(node.options.Count > optionNodes.Count)
+            else
             {
-                yield return new WaitForEndOfFrame();
-            }
-
-
-            foreach (Node optionNode in optionNodes)
-            {
-                var option = Instantiate(optionPrefab, choicesPanel.transform);
-                option.name = "Option" + optionNode.id;
-
-                string dialogText = node.options.Count == 1 ? "->" : optionNode.id + ": " + optionNode.dialog;
-                if (optionNode.unlocking_trust > GainsController.GetInstance().GetGains().GetTrust())
-                    dialogText = "Locked";
-
-                option.GetComponentInChildren<TMP_Text>().text = dialogText;
-                    
-                option.GetComponent<Info>().node = optionNode;
-                options.Add(option.gameObject);
-
-                foreach (Node choice in optionNode.options)
+                foreach (Node optionNode in node.options)
                 {
-                    if (nodeCache.ContainsKey(choice.id) == false)
+                    var option = Instantiate(optionPrefab, choicesPanel.transform);
+                    option.name = "Option" + optionNode.id;
+
+                    string dialogText = node.options.Count == 1 ? "->" : optionNode.id + ": " + optionNode.dialog;
+                    if (optionNode.unlocking_trust > GainsController.GetInstance().GetGains().GetTrust())
+                        dialogText = "Locked";
+                    option.GetComponentInChildren<TMP_Text>().text = dialogText;
+                    option.GetComponent<Button>().onClick.AddListener(() =>
                     {
-                        StartCoroutine(PreloadNode(choice.id));
-                    }
+                        StartCoroutine(
+                        optionNode.option_player_dialog == "" ?
+                            GetNode(optionNode.id, (Node node) => StartCoroutine(LoadNode(node)))
+                            :
+                            ResponseDialogue("player", optionNode.option_player_dialog, optionNode)
+                        );
+                    });
+                    options.Add(option.gameObject);
                 }
             }
         }
@@ -223,6 +213,8 @@ public class MissionController : MonoBehaviour
 
     private IEnumerator PreloadNode(int nodeId)
     {
+        if (nodeCache.ContainsKey(nodeId) || nodesLoading.Contains(nodeId)) yield return null;
+
         nodesLoading.Add(nodeId);
         yield return APIController.GetNode(nodeId, (Node node) =>
         {
@@ -231,5 +223,30 @@ public class MissionController : MonoBehaviour
         });
         Debug.Log("Successfully Preloaded Node With Id: " + nodeId);
         nodesLoading.Remove(nodeId);
+    }
+
+    private IEnumerator ResponseDialogue(string speaker, string dialogue, Node nextNode)
+    {
+        if (speaker == "player")
+        {
+            playerAvatar.gameObject.SetActive(true);
+            alienAvatar.gameObject.SetActive(false);
+        }
+        else
+        {
+            playerAvatar.gameObject.SetActive(false);
+            alienAvatar.gameObject.SetActive(true);
+        }
+
+        ClearOptions();
+        missionProblem.text = dialogue;
+        yield return new WaitForEndOfFrame();
+
+        while (!(Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.KeypadEnter) || Input.GetMouseButton(0)))
+        {
+            yield return new WaitForEndOfFrame();
+        }
+
+        StartCoroutine(GetNode(nextNode.id, (Node node) => StartCoroutine(LoadNode(node))));
     }
 }

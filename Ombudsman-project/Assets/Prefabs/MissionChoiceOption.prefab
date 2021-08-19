@@ -191,7 +191,6 @@ GameObject:
   - component: {fileID: 2645838300455470921}
   - component: {fileID: 6408088584156745402}
   - component: {fileID: 2753390674922877534}
-  - component: {fileID: 2627674210801783306}
   m_Layer: 5
   m_Name: MissionChoiceOption
   m_TagString: Untagged
@@ -301,28 +300,4 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6408088584156745402}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2627674210801783306}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: NextNode
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &2627674210801783306
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8478932674204304002}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 898bd9ca979bc438cb0021b9d9cc013f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+      m_Calls: []

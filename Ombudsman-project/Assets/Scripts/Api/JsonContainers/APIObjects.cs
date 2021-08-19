@@ -23,6 +23,8 @@ public class APIBaseNode
 public class APIGainsNode : APIBaseNode
 {
     public Gains gains;
+    public string option_dialog;
+    public int unlocking_trust;
 }
 
 [System.Serializable]
@@ -37,6 +39,5 @@ public class APIMissionNode
 public class APINodeOption
 {
     public APIGainsNode node;
-    public int unlocking_trust;
 }
 

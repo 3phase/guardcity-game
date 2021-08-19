@@ -77,16 +77,16 @@ public class ApiController : MonoBehaviour
             node.options = new List<Node>();
 
             foreach (var obj in deserializedObj.options)
-            {   
-                if(obj.unlocking_trust > gainsController.GetGains().GetTrust()) { return;  }
-
+            {
                 Node newOption = new Node();
                 
                 newOption.id = obj.node.id;
                 newOption.speaker = obj.node.speaker;
                 newOption.dialog = obj.node.dialog;
-
                 newOption.gains = obj.node.gains;
+                newOption.option_player_dialog = obj.node.option_dialog;
+                newOption.unlocking_trust = obj.node.unlocking_trust;
+                Debug.Log(newOption.id + ": " + newOption.option_player_dialog);
                 node.options.Add(newOption);
             }
 
